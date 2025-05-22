@@ -5,9 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
-  previewFeatures = ["multiSchema", "extendedWhereUnique"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -15,111 +14,150 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Modelos para autenticação (NextAuth)
+// Enum para os diferentes tipos de usuários
+enum UserRole {
+  ALUNO
+  PROFESSOR
+  GESTOR
+  SECRETARIA
+  ADMIN
+}
+
+// Modelo de usuário para autenticação
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  password      String
+  role          UserRole  @default(ALUNO)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts   Account[]
+  sessions   Session[]
+  aluno      Aluno?
+  professor  Professor?
+  gestor     Gestor?
+  secretaria Secretaria?
+
+  @@map("users")
+}
+
+// Modelo para contas conectadas (caso seja usado OAuth)
 model Account {
-  id                String  @id @default(cuid())
+  id                String   @id @default(uuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?  @db.Text
   session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
+// Modelo para sessões de usuário
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
-model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  hashedPassword String?
-  image          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  roleId         String
-
-  accounts     Account[]
-  sessions     Session[]
-  role         Role       @relation(fields: [roleId], references: [id])
-  professor    Professor?
-  aluno        Aluno?
-  gestor       Gestor?
-  secretaria   Secretaria?
-}
-
+// Modelo para verificação de email
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
+  createdAt  DateTime @default(now())
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
-// Modelos para controle de acesso (RBAC)
-model Role {
-  id           String @id @default(cuid())
-  name         String @unique
-  description  String
-  permissions  String[]
-  users        User[]
+// Modelo para recuperação de senha
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@map("password_resets")
 }
 
-// Modelos específicos para cada perfil de usuário
-model Professor {
-  id                String @id @default(cuid())
-  userId            String @unique
-  matricula         String @unique
-  titulacao         String?
-  areaConcurso      String?
-  dataAdmissao      DateTime?
-  
-  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Relacionamentos adicionais serão implementados nos próximos módulos
-}
-
+// Modelo para alunos
 model Aluno {
-  id                String @id @default(cuid())
-  userId            String @unique
-  matricula         String @unique
-  dataNascimento    DateTime
-  responsavel       String?
-  telefoneResponsavel String?
-  
-  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Relacionamentos adicionais serão implementados nos próximos módulos
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  matricula      String   @unique
+  dataNascimento DateTime
+  responsavel    String?
+  telefone       String?
+  endereco       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("alunos")
 }
 
+// Modelo para professores
+model Professor {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  formacao      String?
+  especialidade String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("professores")
+}
+
+// Modelo para gestores escolares
 model Gestor {
-  id                String @id @default(cuid())
-  userId            String @unique
-  cargo             String
-  
-  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Relacionamentos adicionais serão implementados nos próximos módulos
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  cargo     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("gestores")
 }
 
+// Modelo para funcionários da secretaria de educação
 model Secretaria {
-  id                String @id @default(cuid())
-  userId            String @unique
-  departamento      String
-  cargo             String
-  
-  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // Relacionamentos adicionais serão implementados nos próximos módulos
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  departamento String?
+  cargo        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("secretaria")
 }

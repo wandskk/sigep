@@ -1,103 +1,75 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import NextAuth, { type NextAuthConfig } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compare } from "bcrypt-ts-edge";
-import { z } from "zod";
-import { db } from "@/lib/db";
-import { type JWT } from "next-auth/jwt";
+import { AuthService } from "@/lib/auth/auth-service";
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-export const authOptions: NextAuthConfig = {
-  adapter: PrismaAdapter(db),
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/entrar",
-    error: "/entrar",
-  },
+const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: "Credenciais",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Senha", type: "password" },
+        email: { label: "Email", type: "email", placeholder: "seu@email.com" },
+        password: { label: "Senha", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials) {
-          throw new Error("Credenciais não fornecidas");
+        // Verificar se os campos foram preenchidos
+        if (!credentials?.email || !credentials?.password) {
+          return null;
         }
 
         try {
-          const result = loginSchema.safeParse({
-            email: credentials.email,
-            password: credentials.password,
-          });
-
-          if (!result.success) {
-            return null;
-          }
-
-          const { email, password } = result.data;
-          const user = await db.user.findUnique({
-            where: { email },
-            include: {
-              role: true,
-            },
-          });
-
-          if (!user || !user.hashedPassword) {
-            return null;
-          }
-
-          const passwordsMatch = await compare(
-            password,
-            user.hashedPassword
+          // Usar o serviço de autenticação para validar as credenciais
+          const result = await AuthService.authenticateUser(
+            credentials.email,
+            credentials.password
           );
 
-          if (!passwordsMatch) {
+          if (!result.success || !result.user) {
             return null;
           }
 
+          // Retornar o usuário para NextAuth
           return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            image: user.image,
-            role: user.role.name,
-            permissions: user.role.permissions,
+            id: result.user.id,
+            name: result.user.name,
+            email: result.user.email,
+            role: result.user.role,
+            image: result.user.image
           };
         } catch (error) {
-          console.error("Erro durante autenticação:", error);
+          console.error("Erro na autenticação:", error);
           return null;
         }
-      },
-    }),
+      }
+    })
   ],
+  pages: {
+    signIn: "/login",
+    signOut: "/logout",
+    error: "/login", // Redirecionar para login em caso de erro
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+  },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
+    // Adiciona informações ao JWT
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.permissions = user.permissions;
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: JWT }) {
-      if (token && session.user) {
+    // Adiciona informações à sessão
+    async session({ session, token }) {
+      if (token) {
         session.user.id = token.id;
         session.user.role = token.role;
-        session.user.permissions = token.permissions;
       }
       return session;
-    },
+    }
   },
-};
-
-const handler = NextAuth(authOptions);
+  secret: process.env.NEXTAUTH_SECRET || "sigep-secret-key-dev",
+});
 
 export { handler as GET, handler as POST }; 

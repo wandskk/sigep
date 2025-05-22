@@ -1,51 +1,18 @@
 # SIGEP - Sistema de Gestão Escolar de Baraúna
 
-O SIGEP é uma solução digital desenvolvida com o objetivo de modernizar, integrar e facilitar os processos pedagógicos e administrativos das escolas da rede municipal de ensino de Baraúna/RN. Trata-se de uma plataforma web segura, responsiva e intuitiva, com funcionalidades adaptadas às necessidades de alunos, professores, gestores escolares e da Secretaria Municipal de Educação.
+Este é um projeto [Next.js](https://nextjs.org) desenvolvido para gerenciar escolas no município de Baraúna/RN.
 
-## Objetivo
+## Sistema de Autenticação
 
-Centralizar e digitalizar a gestão escolar em um único sistema, reduzindo burocracias, facilitando o acesso à informação, promovendo a transparência e melhorando o acompanhamento da vida escolar dos alunos por todos os envolvidos no processo educacional.
+O SIGEP utiliza um sistema de autenticação completo baseado em NextAuth.js para controle de acesso:
 
-## Principais Funcionalidades
+- **Formulário de Login Responsivo**: Interface amigável para autenticação de usuários
+- **Redirecionamento Inteligente**: Após login, usuários são direcionados para páginas apropriadas baseadas em seus perfis
+- **Perfis de Acesso**: Suporte para múltiplos perfis (ALUNO, PROFESSOR, GESTOR, SECRETARIA e ADMIN)
+- **Proteção de Rotas**: Middleware de autenticação que verifica permissões por perfil
+- **Persistência**: Dados de usuários armazenados em banco de dados PostgreSQL via Prisma ORM
 
-### Para Professores 👩‍🏫
-- Lançamento de notas
-- Registro de presença (chamada)
-- Acesso às turmas por horário/disciplina
-- Visualização de desempenho dos alunos
-
-### Para Alunos 👨‍🎓
-- Visualização de notas e presenças
-- Consulta de turmas e disciplinas
-- Cadastro de informações pessoais
-
-### Para Gestores Escolares 👨‍💼
-- Cadastro de turmas, professores, alunos e cursos
-- Acompanhamento de desempenho por turma e por escola
-- Relatórios gerenciais e pedagógicos
-
-### Para Secretaria Municipal de Educação 📄
-- Acesso global a todas as escolas da rede
-- Geração de relatórios estatísticos
-- Auditoria de dados e integrações futuras com sistemas estaduais/federais
-
-## Tecnologias Utilizadas
-
-- **Next.js 15** com suporte full-stack
-- **React 19** para interfaces modernas e dinâmicas
-- **Prisma ORM** com suporte a PostgreSQL
-- **TailwindCSS** para estilização responsiva
-- **Zod + React Hook Form** para validação de dados robusta
-- **Autenticação** com NextAuth e controle de acesso por roles
-- **WebSockets** para atualização em tempo real de chamadas e notas
-
-## Requisitos de Sistema
-
-- Node.js 18.x ou superior
-- PostgreSQL 13 ou superior
-- NPM 9.x ou superior
-
-## Instalação e Configuração
+## Iniciando o Desenvolvimento
 
 1. Clone o repositório:
 ```bash
@@ -58,21 +25,19 @@ cd sigep
 npm install
 ```
 
-3. Configure o arquivo `.env` com suas variáveis de ambiente:
-```
-DATABASE_URL="postgresql://usuario:senha@localhost:5432/sigep"
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="sua-chave-secreta-aqui"
+3. Configure as variáveis de ambiente (copie o arquivo .env.example):
+```bash
+cp .env.example .env.local
 ```
 
-4. Execute as migrações do banco de dados:
+4. Gere o cliente Prisma:
 ```bash
-npx prisma migrate dev --name init
+npx prisma generate
 ```
 
-5. Popule o banco de dados com dados iniciais:
+5. Execute o seed para criar usuários de teste:
 ```bash
-npm run seed
+npx prisma db seed
 ```
 
 6. Inicie o servidor de desenvolvimento:
@@ -80,66 +45,38 @@ npm run seed
 npm run dev
 ```
 
-7. Acesse a aplicação em [http://localhost:3000](http://localhost:3000)
+Abra [http://localhost:3000](http://localhost:3000) para ver o resultado.
 
-### Usuário Administrador Padrão
-- Email: admin@sigep.gov.br
-- Senha: Admin@123
+## Usuários de Teste
 
-## Módulos do Sistema
+Para testar o sistema, utilize os seguintes usuários criados pelo seed:
 
-O SIGEP é composto pelos seguintes módulos:
+| Perfil     | Email                 | Senha     |
+|------------|------------------------|-----------|
+| ADMIN      | admin@sigep.com       | senha123  |
+| SECRETARIA | secretaria@sigep.com  | senha123  |
+| GESTOR     | gestor@sigep.com      | senha123  |
+| PROFESSOR  | professor1@sigep.com  | senha123  |
+| ALUNO      | aluno1@sigep.com      | senha123  |
 
-1. **Autenticação**: Login, registro, recuperação de senha, controle de roles
-2. **Escolas**: Cadastro de escolas, diretoria, cursos
-3. **Turmas**: CRUD de turmas, vínculo com cursos e horários
-4. **Professores**: Cadastro, vínculo com disciplinas, lançamento de chamadas e notas
-5. **Alunos**: Cadastro, matrícula, visualização de notas e faltas
-6. **Notas**: Lançamento por disciplina, listagem por aluno
-7. **Chamada**: Registro por professor no horário correto
-8. **Gestão Escolar**: Relatórios, gerenciamento completo da escola
-9. **Secretaria**: Painel global de supervisão das escolas
+## Tecnologias Utilizadas
 
-## Estrutura do Projeto
+- **Next.js 15**: Framework React com suporte a App Router
+- **NextAuth.js**: Sistema completo de autenticação
+- **Prisma ORM**: ORM para acesso ao banco de dados
+- **PostgreSQL**: Banco de dados relacional
+- **React Hook Form**: Gerenciamento de formulários com validação
+- **TailwindCSS**: Framework CSS para estilização rápida
 
-```
-sigep/
-├── prisma/                  # Modelos de banco de dados e migrations
-├── public/                  # Arquivos estáticos
-├── src/
-│   ├── app/                 # Rotas e páginas da aplicação
-│   │   ├── api/             # Rotas de API
-│   │   ├── (auth)/          # Páginas de autenticação
-│   │   ├── dashboard/       # Dashboard principal
-│   │   └── ...              # Outras páginas
-│   ├── components/          # Componentes React reutilizáveis
-│   ├── lib/                 # Utilitários e funções auxiliares
-│   ├── providers/           # Provedores de contexto
-│   └── types/               # Definições de tipos TypeScript
-└── ...
-```
+## Saiba Mais
 
-## Controle de Acesso (RBAC)
+Para aprender mais sobre as tecnologias utilizadas:
 
-O sistema implementa um controle de acesso baseado em funções (RBAC):
+- [Next.js Documentation](https://nextjs.org/docs)
+- [NextAuth.js Documentation](https://next-auth.js.org)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [React Hook Form](https://react-hook-form.com)
 
-- **Aluno**: acesso apenas às próprias notas, faltas e informações pessoais
-- **Professor**: acesso e edição apenas das turmas e disciplinas atribuídas
-- **Gestor Escolar**: gestão completa da unidade escolar
-- **Secretaria de Educação**: controle total e leitura de todas as unidades
-- **Administrador**: acesso total ao sistema
+## Deploy
 
-## Benefícios Esperados
-
-- Redução de uso de papel e planilhas descentralizadas
-- Tomada de decisão baseada em dados reais
-- Facilidade no acompanhamento do processo ensino-aprendizagem
-- Maior transparência e segurança na gestão de informações
-
-## Licença
-
-Este projeto é de propriedade da Secretaria Municipal de Educação de Baraúna/RN.
-
-## Contribuição
-
-Para contribuir com o projeto, por favor entre em contato com a equipe de desenvolvimento ou abra uma issue para discutir suas ideias.
+O SIGEP pode ser facilmente implantado na [Vercel Platform](https://vercel.com/new).

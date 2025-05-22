@@ -1,30 +1,34 @@
-import { ReactNode } from "react";
-import { Inter, Geist } from "next/font/google";
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { NextAuthProvider } from "@/providers/auth-provider";
-import Navbar from "@/components/ui/navbar";
+import AuthProvider from "@/providers/session-provider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "SIGEP - Sistema de Gestão Escolar de Baraúna",
-  description: "Sistema de Gestão Escolar para a rede municipal de ensino de Baraúna/RN",
+  title: "SIGEP - Sistema de Gestão",
+  description: "Sistema Integrado de Gestão",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR">
       <body
-        className={`${inter.variable} ${geist.variable} font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextAuthProvider>
-          <Navbar />
-          <main>
-            {children}
-          </main>
-        </NextAuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
