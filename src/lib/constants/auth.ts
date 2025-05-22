@@ -26,14 +26,14 @@ export const ROLE_DISPLAY_NAMES = {
 };
 
 /**
- * Mapeamento de perfis para suas rotas de redirecionamento após login
+ * Mapeamento de perfis para caminhos de redirecionamento
  */
-export const ROLE_REDIRECT_PATHS = {
+export const ROLE_REDIRECT_PATHS: Record<UserRole, string> = {
   [UserRole.ADMIN]: "/admin",
-  [UserRole.ALUNO]: "/dashboard",
-  [UserRole.PROFESSOR]: "/turmas",
-  [UserRole.GESTOR]: "/escolas",
-  [UserRole.SECRETARIA]: "/escolas",
+  [UserRole.GESTOR]: "/gestor",
+  [UserRole.SECRETARIA]: "/secretaria",
+  [UserRole.PROFESSOR]: "/professor",
+  [UserRole.ALUNO]: "/aluno",
 };
 
 /**

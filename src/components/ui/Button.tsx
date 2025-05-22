@@ -3,7 +3,7 @@
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
 // Variantes de botão disponíveis
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error" | "danger" | "success";
 // Tamanhos de botão disponíveis
 type ButtonSize = "sm" | "md" | "lg";
 
@@ -32,14 +32,16 @@ export function Button({
   ...props
 }: ButtonProps) {
   // Mapeia variantes para classes de estilo
-  const variantStyles = {
-    primary: "bg-[#1E3A8A] text-white hover:bg-[#15286D] focus:ring-2 focus:ring-[#3151A6] focus:ring-offset-2",
-    secondary: "bg-[#10B981] text-white hover:bg-[#059669] focus:ring-2 focus:ring-[#34D399] focus:ring-offset-2",
+  const variantStyles: Record<ButtonVariant, string> = {
+    primary: "bg-[#1E3A8A] text-white hover:bg-[#1E3A8A]/90",
+    secondary: "bg-white text-[#374151] border border-gray-300 hover:bg-gray-50",
     outline: "bg-transparent border border-[#1E3A8A] text-[#1E3A8A] hover:bg-[#1E3A8A]/10",
     ghost: "bg-transparent text-[#1E3A8A] hover:bg-[#1E3A8A]/10",
     link: "bg-transparent text-[#1E3A8A] hover:underline p-0 h-auto",
     warning: "bg-[#FBBF24] text-[#374151] hover:bg-[#FBBF24]/90",
     error: "bg-[#EF4444] text-white hover:bg-[#EF4444]/90",
+    danger: "bg-red-600 text-white hover:bg-red-700",
+    success: "bg-green-600 text-white hover:bg-green-700",
   };
 
   // Mapeia tamanhos para classes de estilo

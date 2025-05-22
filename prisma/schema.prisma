@@ -23,6 +23,28 @@ enum UserRole {
   ADMIN
 }
 
+// Enum para os turnos das turmas
+enum Turno {
+  MATUTINO
+  VESPERTINO
+  NOTURNO
+}
+
+// Enum para os tipos de notas
+enum TipoNota {
+  PROVA
+  TRABALHO
+  EXERCICIO
+}
+
+// Enum para os bimestres
+enum Bimestre {
+  PRIMEIRO
+  SEGUNDO
+  TERCEIRO
+  QUARTO
+}
+
 // Modelo de usuário para autenticação
 model User {
   id            String    @id @default(uuid())
@@ -32,6 +54,7 @@ model User {
   password      String
   role          UserRole  @default(ALUNO)
   image         String?
+  firstLogin    Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -118,6 +141,8 @@ model Aluno {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  turmas         AlunoTurma[]
+
   @@map("alunos")
 }
 
@@ -127,10 +152,13 @@ model Professor {
   userId        String   @unique
   formacao      String?
   especialidade String?
+  escolaId      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  escola       School?        @relation(fields: [escolaId], references: [id])
+  turmas       ProfessorTurma[]
 
   @@map("professores")
 }
@@ -143,7 +171,8 @@ model Gestor {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  escolas   School[]
 
   @@map("gestores")
 }
@@ -160,4 +189,159 @@ model Secretaria {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("secretaria")
+}
+
+// Modelo para escolas
+model School {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  city      String
+  state     String
+  email     String   @unique
+  phone     String
+  website   String?
+  gestorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  gestor      Gestor?     @relation(fields: [gestorId], references: [id])
+  turmas      Turma[]
+  disciplinas Disciplina[]
+  professores Professor[]
+
+  @@map("schools")
+}
+
+// Modelo para turmas
+model Turma {
+  id        String   @id @default(uuid())
+  nome      String
+  codigo    String   @unique
+  turno     Turno
+  escolaId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  escola      School       @relation(fields: [escolaId], references: [id])
+  professores ProfessorTurma[]
+  alunos      AlunoTurma[]
+  disciplinas DisciplinaTurma[]
+
+  @@map("turmas")
+}
+
+// Modelo para disciplinas
+model Disciplina {
+  id           String   @id @default(uuid())
+  nome         String
+  codigo       String   @unique
+  escolaId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  escola       School   @relation(fields: [escolaId], references: [id])
+  turmas       DisciplinaTurma[]
+  professores  ProfessorDisciplinaTurma[]
+  notas        Nota[]
+
+  @@map("disciplinas")
+}
+
+// Modelo para relação entre Professor e Turma
+model ProfessorTurma {
+  id           String   @id @default(uuid())
+  professorId  String
+  turmaId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  professor    Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  turma        Turma     @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  disciplinas  ProfessorDisciplinaTurma[]
+
+  @@unique([professorId, turmaId])
+  @@map("professor_turma")
+}
+
+// Modelo para relação entre Professor, Disciplina e Turma
+model ProfessorDisciplinaTurma {
+  id                String   @id @default(uuid())
+  professorTurmaId  String
+  disciplinaId      String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  professorTurma    ProfessorTurma @relation(fields: [professorTurmaId], references: [id], onDelete: Cascade)
+  disciplina        Disciplina      @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  @@unique([professorTurmaId, disciplinaId])
+  @@map("professor_disciplina_turma")
+}
+
+// Modelo para relação entre Aluno e Turma
+model AlunoTurma {
+  id        String   @id @default(uuid())
+  alunoId   String
+  turmaId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aluno      Aluno @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  turma      Turma @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  presencas  Presenca[]
+  notas      Nota[]
+
+  @@unique([alunoId, turmaId])
+  @@map("aluno_turma")
+}
+
+// Modelo para relação entre Turma e Disciplina
+model DisciplinaTurma {
+  id           String   @id @default(uuid())
+  disciplinaId String
+  turmaId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  turma        Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  @@unique([disciplinaId, turmaId])
+  @@map("disciplina_turma")
+}
+
+// Modelo para registro de presença
+model Presenca {
+  id           String   @id @default(uuid())
+  alunoTurmaId String
+  data         DateTime
+  presente     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  alunoTurma   AlunoTurma @relation(fields: [alunoTurmaId], references: [id], onDelete: Cascade)
+
+  @@unique([alunoTurmaId, data])
+  @@map("presencas")
+}
+
+// Modelo para registro de notas
+model Nota {
+  id           String    @id @default(uuid())
+  alunoTurmaId String
+  disciplinaId String
+  data         DateTime
+  valor        Float
+  tipo         TipoNota
+  bimestre     Bimestre
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  alunoTurma   AlunoTurma   @relation(fields: [alunoTurmaId], references: [id], onDelete: Cascade)
+  disciplina   Disciplina   @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+
+  @@unique([alunoTurmaId, disciplinaId, tipo, bimestre, data])
+  @@map("notas")
 }

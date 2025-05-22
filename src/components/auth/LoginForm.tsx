@@ -9,9 +9,16 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   const {
     register,
@@ -28,15 +35,52 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
+    setError(null);
 
     try {
-      // Aqui seria implementada a lógica de autenticação
-      console.log("Dados do formulário:", data);
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
-      // Simula um atraso de 1 segundo
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (result?.error) {
+        setError("Credenciais inválidas. Verifique seu email e senha.");
+        return;
+      }
+
+      // Buscar informações atualizadas do usuário
+      const userResponse = await fetch("/api/auth/session");
+      const session = await userResponse.json();
+      
+      // Determinar para onde redirecionar com base no papel do usuário
+      let redirectUrl = callbackUrl;
+      
+      if (session?.user?.role) {
+        switch (session.user.role) {
+          case "ADMIN":
+            redirectUrl = "/admin";
+            break;
+          case "GESTOR":
+            redirectUrl = "/gestor";
+            break;
+          case "PROFESSOR":
+            redirectUrl = "/professor";
+            break;
+          case "ALUNO":
+            redirectUrl = "/aluno";
+            break;
+          default:
+            redirectUrl = "/dashboard";
+        }
+      }
+
+      // Redirecionar para a URL adequada
+      router.push(redirectUrl);
+      router.refresh();
     } catch (error) {
       console.error("Erro ao fazer login:", error);
+      setError("Ocorreu um erro ao fazer login. Tente novamente mais tarde.");
     } finally {
       setIsLoading(false);
     }
@@ -48,6 +92,12 @@ export function LoginForm() {
         <h1 className="text-2xl font-bold text-[#374151] mb-6 mt-4">
           Entrar no SIGEP
         </h1>
+
+        {error && (
+          <Alert variant="error" className="w-full mb-4">
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-5">
           <Input
