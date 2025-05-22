@@ -1,7 +1,6 @@
-import { LoginForm } from "@/components/auth/LoginForm";
-import { Logo } from "@/components/Logo";
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row">
       {/* Lado esquerdo - Background decorativo */}
@@ -36,10 +35,10 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Lado direito - Formulário de login */}
+      {/* Lado direito - Formulário de recuperação de senha */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-[#F3F4F6] p-6">
-        <LoginForm />
+        <ForgotPasswordForm />
       </div>
     </div>
   );
-}
+} 

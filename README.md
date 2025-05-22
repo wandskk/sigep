@@ -6,11 +6,23 @@ Este é um projeto [Next.js](https://nextjs.org) desenvolvido para gerenciar esc
 
 O SIGEP utiliza um sistema de autenticação completo baseado em NextAuth.js para controle de acesso:
 
+- **Interfaces Padronizadas**: Telas de login e recuperação de senha com design consistente e moderno
 - **Formulário de Login Responsivo**: Interface amigável para autenticação de usuários
 - **Redirecionamento Inteligente**: Após login, usuários são direcionados para páginas apropriadas baseadas em seus perfis
 - **Perfis de Acesso**: Suporte para múltiplos perfis (ALUNO, PROFESSOR, GESTOR, SECRETARIA e ADMIN)
 - **Proteção de Rotas**: Middleware de autenticação que verifica permissões por perfil
 - **Persistência**: Dados de usuários armazenados em banco de dados PostgreSQL via Prisma ORM
+- **Recuperação de Senha**: Processo de recuperação de senha com confirmação visual e validação de dados
+
+## Interfaces de Autenticação
+
+O sistema conta com interfaces padronizadas para autenticação:
+
+- **Login**: Tela principal de acesso com campos para email e senha
+- **Recuperação de Senha**: Interface para solicitar redefinição de senha via email
+- **Layout Dividido**: Design moderno com área informativa e área de formulário
+- **Validação em Tempo Real**: Feedback imediato para dados incorretos
+- **Acessibilidade**: Componentes desenvolvidos seguindo boas práticas de acessibilidade
 
 ## Iniciando o Desenvolvimento
 
@@ -67,6 +79,7 @@ Para testar o sistema, utilize os seguintes usuários criados pelo seed:
 - **PostgreSQL**: Banco de dados relacional
 - **React Hook Form**: Gerenciamento de formulários com validação
 - **TailwindCSS**: Framework CSS para estilização rápida
+- **Zod**: Validação de esquemas e tipagem para formulários
 
 ## Saiba Mais
 
@@ -76,6 +89,7 @@ Para aprender mais sobre as tecnologias utilizadas:
 - [NextAuth.js Documentation](https://next-auth.js.org)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [React Hook Form](https://react-hook-form.com)
+- [Zod Documentation](https://zod.dev)
 
 ## Deploy
 
