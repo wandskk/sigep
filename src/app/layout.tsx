@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SIGEP - Sistema de Gestão",
-  description: "Sistema Integrado de Gestão",
+  title: `%s | ${process.env.NEXT_PUBLIC_APP_NAME}`,
+  description: process.env.NEXT_PUBLIC_APP_DESCRIPTION,
 };
 
 export default function RootLayout({
