@@ -20,7 +20,7 @@ export interface CreateUserParams {
 export interface AuthResult {
   success: boolean;
   message?: string;
-  user?: any;
+  user?: Record<string, unknown>;
 }
 
 /**

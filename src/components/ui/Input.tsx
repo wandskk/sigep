@@ -13,7 +13,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   errorClassName?: string;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
       label,
@@ -83,4 +83,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       </div>
     );
   }
-); 
+);
+
+Input.displayName = "Input";
+
+export { Input };

@@ -15,7 +15,7 @@ export interface CreateUserParams {
 export interface AuthResult {
   success: boolean;
   message?: string;
-  user?: any;
+  user?: Record<string, unknown>;
 }
 
 // Serviço de autenticação
@@ -49,7 +49,8 @@ export const AuthService = {
       });
 
       // Remove a senha do objeto retornado
-      const { password: _, ...userWithoutPassword } = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: __, ...userWithoutPassword } = user;
 
       return {
         success: true,
@@ -91,7 +92,8 @@ export const AuthService = {
       }
 
       // Remove a senha do objeto retornado
-      const { password: _, ...userWithoutPassword } = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: __, ...userWithoutPassword } = user;
 
       return {
         success: true,

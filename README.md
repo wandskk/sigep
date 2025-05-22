@@ -24,6 +24,15 @@ O sistema conta com interfaces padronizadas para autenticação:
 - **Validação em Tempo Real**: Feedback imediato para dados incorretos
 - **Acessibilidade**: Componentes desenvolvidos seguindo boas práticas de acessibilidade
 
+## Padronização de Código
+
+O projeto segue padrões de codificação consistentes:
+
+- **Nomenclatura PascalCase**: Componentes e seus arquivos utilizam PascalCase (ex: `Button.tsx`)
+- **Importações com @**: Uso de alias para importações, facilitando referências a arquivos
+- **Case-Sensitivity**: Respeito à sensibilidade de maiúsculas/minúsculas nos caminhos de importação
+- **Componentes Reutilizáveis**: Estrutura modular com componentes UI isolados e reutilizáveis
+
 ## Iniciando o Desenvolvimento
 
 1. Clone o repositório:

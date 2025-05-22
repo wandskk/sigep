@@ -1,9 +1,9 @@
 "use server";
 
-import { prisma } from "../../../lib/auth/prisma-adapter";
-import { comparePasswords } from "../../utils/auth.utils";
-import { LoginParams, AuthResult } from "../../types/auth.types";
-import { validateEmail } from "../../validators/auth/email.validator";
+import { prisma } from "@/lib/auth/prisma-adapter";
+import { comparePasswords } from "@/lib/utils/auth.utils";
+import { LoginParams, AuthResult } from "@/lib/types/auth.types";
+import { validateEmail } from "@/lib/validators/auth/email.validator";
 
 /**
  * Ação do servidor para autenticar um usuário
@@ -46,7 +46,8 @@ export async function authenticateUser(params: LoginParams): Promise<AuthResult>
       };
     }
 
-    // Remove a senha do objeto retornado
+    // Remove a senha do objeto retornado usando desestruturação
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return {
@@ -60,4 +61,4 @@ export async function authenticateUser(params: LoginParams): Promise<AuthResult>
       message: "Erro ao fazer login. Tente novamente mais tarde."
     };
   }
-} 
+}

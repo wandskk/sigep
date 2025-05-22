@@ -3,7 +3,7 @@
 import { prisma } from "../../../lib/auth/prisma-adapter";
 import { generateSecureToken, calculateTokenExpiry, hashPassword } from "../../utils/auth.utils";
 import { AuthResult, ResetPasswordParams } from "../../types/auth.types";
-import { validatePassword, validatePasswordConfirmation } from "../../validators/auth/password.validator";
+import { validatePassword } from "../../validators/auth/password.validator";
 import { validateEmail } from "../../validators/auth/email.validator";
 import { PASSWORD_RESET_TOKEN_EXPIRY } from "../../constants/auth";
 

@@ -59,7 +59,8 @@ export async function registerUser(params: CreateUserParams): Promise<AuthResult
       }
     });
 
-    // Remove a senha do objeto retornado
+    // Remove a senha do objeto retornado usando desestruturação
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
 
     return {
@@ -73,4 +74,4 @@ export async function registerUser(params: CreateUserParams): Promise<AuthResult
       message: "Erro ao criar usuário. Tente novamente mais tarde."
     };
   }
-} 
+}

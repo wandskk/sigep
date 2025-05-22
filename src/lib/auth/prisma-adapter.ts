@@ -1,22 +1,29 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
-// Cria uma instância do PrismaClient
-const prismaClientSingleton = () => {
-  return new PrismaClient();
-};
+// Tipo para a instância global do Prisma
+type PrismaClientSingleton = ReturnType<typeof createPrismaClient>;
 
-// Define o tipo para a variável global do Prisma
+// Função para criar uma instância única do PrismaClient
+const createPrismaClient = () => new PrismaClient();
+
+// Extensão do tipo globalThis para incluir prisma
 declare global {
-  var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
+  interface GlobalThis {
+    prisma?: PrismaClientSingleton;
+  }
 }
 
-// Usa uma instância global em desenvolvimento para evitar múltiplas instâncias
-export const prisma = globalThis.prisma ?? prismaClientSingleton();
+// Obtém a instância global ou cria uma nova
+const globalForPrisma = globalThis as { prisma?: PrismaClientSingleton };
 
-if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
+// Exporta a instância do Prisma (reutiliza em dev, cria nova em produção)
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
-// Cria e exporta o adaptador Prisma para NextAuth
-export function getPrismaAdapter() {
-  return PrismaAdapter(prisma);
+// Armazena a instância global apenas em desenvolvimento
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }
+
+// Exporta o adaptador Prisma para o NextAuth
+export const getPrismaAdapter = () => PrismaAdapter(prisma);
