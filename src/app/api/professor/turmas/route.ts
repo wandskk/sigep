@@ -11,27 +11,39 @@ export async function GET() {
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
-    const turmas = await prisma.professorTurma.findMany({
+    // Primeiro, busca o professor
+    const professor = await prisma.professor.findFirst({
       where: {
-        professor: {
-          userId: session.user.id,
-        },
+        userId: session.user.id,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!professor) {
+      return new NextResponse("Professor não encontrado", { status: 404 });
+    }
+
+    // Busca as turmas do professor com suas disciplinas
+    const professorTurmas = await prisma.professorTurma.findMany({
+      where: {
+        professorId: professor.id,
       },
       include: {
         turma: {
           include: {
             escola: true,
-            disciplinas: {
-              include: {
-                disciplina: true,
-              },
-            },
             _count: {
               select: {
                 alunos: true,
-                disciplinas: true,
               },
             },
+          },
+        },
+        disciplinas: {
+          include: {
+            disciplina: true,
           },
         },
       },
@@ -42,7 +54,7 @@ export async function GET() {
       },
     });
 
-    const turmasFormatadas = turmas.map((pt) => ({
+    const turmasFormatadas = professorTurmas.map((pt) => ({
       id: pt.turma.id,
       nome: pt.turma.nome,
       codigo: pt.turma.codigo,
@@ -52,10 +64,10 @@ export async function GET() {
         nome: pt.turma.escola.name,
       },
       totalAlunos: pt.turma._count.alunos,
-      disciplinas: pt.turma.disciplinas.map((dt) => ({
-        id: dt.disciplina.id,
-        nome: dt.disciplina.nome,
-        codigo: dt.disciplina.codigo,
+      disciplinas: pt.disciplinas.map((pdt) => ({
+        id: pdt.disciplina.id,
+        nome: pdt.disciplina.nome,
+        codigo: pdt.disciplina.codigo,
       })),
     }));
 

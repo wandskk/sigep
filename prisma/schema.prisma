@@ -300,6 +300,7 @@ model Disciplina {
   turmas       DisciplinaTurma[]
   professores  ProfessorDisciplinaTurma[]
   notas        Nota[]
+  presencas    Presenca[]
 
   @@map("disciplinas")
 }
@@ -372,14 +373,16 @@ model DisciplinaTurma {
 model Presenca {
   id           String   @id @default(uuid())
   alunoTurmaId String
+  disciplinaId String
   data         DateTime
   presente     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  alunoTurma   AlunoTurma @relation(fields: [alunoTurmaId], references: [id], onDelete: Cascade)
+  alunoTurma   AlunoTurma   @relation(fields: [alunoTurmaId], references: [id], onDelete: Cascade)
+  disciplina   Disciplina   @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
 
-  @@unique([alunoTurmaId, data])
+  @@unique([alunoTurmaId, disciplinaId, data])
   @@map("presencas")
 }
 

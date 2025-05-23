@@ -7,9 +7,16 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from "@/components/ui/Select";
 import { Alert } from "@/components/ui/Alert";
 import { useState, useEffect, use } from "react";
+import { Controller } from "react-hook-form";
 
 // Schema de validação
 const userSchema = z.object({
@@ -42,6 +49,7 @@ export default function EditUserPage({ params }: EditUserPageProps) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -216,18 +224,27 @@ export default function EditUserPage({ params }: EditUserPageProps) {
             <label htmlFor="role" className="block text-sm font-medium">
               Função
             </label>
-            <Select
-              id="role"
-              {...register("role")}
-              error={errors.role?.message}
-            >
-              <option value="">Selecione uma função</option>
-              <option value="ADMIN">Administrador</option>
-              <option value="SECRETARIA">Secretaria</option>
-              <option value="GESTOR">Gestor</option>
-              <option value="PROFESSOR">Professor</option>
-              <option value="ALUNO">Aluno</option>
-            </Select>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger id="role" className={errors.role?.message ? "border-red-500" : ""}>
+                    <SelectValue placeholder="Selecione uma função" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ADMIN">Administrador</SelectItem>
+                    <SelectItem value="SECRETARIA">Secretaria</SelectItem>
+                    <SelectItem value="GESTOR">Gestor</SelectItem>
+                    <SelectItem value="PROFESSOR">Professor</SelectItem>
+                    <SelectItem value="ALUNO">Aluno</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.role?.message && (
+              <p className="text-sm text-red-600">{errors.role.message}</p>
+            )}
           </div>
 
           <div className="flex justify-end space-x-4 pt-4">

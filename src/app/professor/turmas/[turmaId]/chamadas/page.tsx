@@ -120,6 +120,14 @@ export default function ListagemChamadas({
     <div className="min-h-screen bg-[#F3F4F6]">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          <div className="mb-4">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center px-4 py-2 border border-[#E5E7EB] rounded-md shadow-sm text-sm font-medium text-[#374151] bg-white hover:bg-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1E3A8A]"
+            >
+              Voltar
+            </button>
+          </div>
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-[#374151]">
@@ -131,19 +139,13 @@ export default function ListagemChamadas({
                 </p>
               )}
             </div>
-            <div className="flex gap-4">
+            <div>
               <Link
                 href={`/professor/turmas/${resolvedParams.turmaId}/chamada`}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#1E3A8A] hover:bg-[#1E40AF] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1E3A8A]"
               >
                 Nova Chamada
               </Link>
-              <button
-                onClick={() => router.back()}
-                className="inline-flex items-center px-4 py-2 border border-[#E5E7EB] rounded-md shadow-sm text-sm font-medium text-[#374151] bg-white hover:bg-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1E3A8A]"
-              >
-                Voltar
-              </button>
             </div>
           </div>
 
@@ -228,17 +230,11 @@ export default function ListagemChamadas({
                               scope="col"
                               className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider"
                             >
-                              Matrícula
+                              Nome do Aluno
                             </th>
                             <th
                               scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider"
-                            >
-                              Nome
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wider"
+                              className="px-6 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wider"
                             >
                               Situação
                             </th>
@@ -246,14 +242,11 @@ export default function ListagemChamadas({
                         </thead>
                         <tbody className="bg-white divide-y divide-[#E5E7EB]">
                           {chamada.alunos && chamada.alunos.map((aluno) => (
-                            <tr key={aluno.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-[#374151]">
-                                {aluno.matricula}
+                            <tr key={aluno.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#374151]">
+                                {aluno.nome}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-[#374151]">
-                                {aluno.nome || "Nome não disponível"}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
                                 <span
                                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                     aluno.presente

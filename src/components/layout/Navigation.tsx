@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
   
   { href: "/professor", label: "Dashboard", icon: LayoutDashboard, roles: [UserRole.PROFESSOR] },
   { href: "/professor/turmas", label: "Minhas Turmas", icon: School, roles: [UserRole.PROFESSOR] },
+  { href: "/professor/alunos", label: "Meus Alunos", icon: Users, roles: [UserRole.PROFESSOR] },
   { href: "/professor/ocorrencias", label: "Ocorrências", icon: ClipboardList, roles: [UserRole.PROFESSOR] },
   
   { href: "/secretaria", label: "Dashboard", icon: LayoutDashboard, roles: [UserRole.SECRETARIA] },
@@ -45,6 +46,7 @@ const navItems: NavItem[] = [
   
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: [UserRole.ADMIN] },
   { href: "/admin/escolas", label: "Escolas", icon: School, roles: [UserRole.ADMIN] },
+  { href: "/admin/professores", label: "Professores", icon: GraduationCap, roles: [UserRole.ADMIN] },
   { href: "/admin/usuarios", label: "Usuários", icon: Users, roles: [UserRole.ADMIN] },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings, roles: [UserRole.ADMIN] },
 ];

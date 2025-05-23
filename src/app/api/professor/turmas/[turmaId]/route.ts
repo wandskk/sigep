@@ -14,13 +14,15 @@ export async function GET(
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
+    const { turmaId } = await params;
+
     // Busca a turma e verifica se o professor tem acesso
     const professorTurma = await prisma.professorTurma.findFirst({
       where: {
         professor: {
           userId: session.user.id,
         },
-        turmaId: params.turmaId,
+        turmaId: turmaId,
       },
       include: {
         turma: {
@@ -66,4 +68,4 @@ export async function GET(
     console.error("[TURMA_GET]", error);
     return new NextResponse("Erro interno do servidor", { status: 500 });
   }
-} 
+}
