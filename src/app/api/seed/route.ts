@@ -181,6 +181,7 @@ async function createUsers() {
       telefone: "84999991111",
       parentesco: "MAE",
       alunoId: aluno1.aluno!.id,
+      endereco: "Rua das Flores, 123"
     },
   });
   console.log(`Aluno 1 e seu responsável criados: ${aluno1.email}`);
@@ -225,6 +226,7 @@ async function createUsers() {
       telefone: "84999992222",
       parentesco: "PAI",
       alunoId: aluno2.aluno!.id,
+      endereco: "Av. Principal, 456"
     },
   });
   console.log(`Aluno 2 e seu responsável criados: ${aluno2.email}`);
@@ -269,6 +271,7 @@ async function createUsers() {
       telefone: "84999993333",
       parentesco: "MAE",
       alunoId: aluno3.aluno!.id,
+      endereco: "Rua do Comércio, 789"
     },
   });
   console.log(`Aluno 3 e seu responsável criados: ${aluno3.email}`);
