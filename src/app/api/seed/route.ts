@@ -140,7 +140,7 @@ async function createUsers() {
   });
   console.log(`Professor criado: ${professor2.email}`);
 
-  // 5. Criar alunos
+  // 5. Criar alunos e seus responsáveis
   const aluno1 = await prisma.user.create({
     data: {
       name: "Pedro Almeida",
@@ -151,9 +151,19 @@ async function createUsers() {
         create: {
           matricula: "20240001",
           dataNascimento: new Date("2008-05-15"),
-          responsavel: "Mariana Almeida",
-          telefone: "(84) 99999-1111",
-          endereco: "Rua das Flores, 123 - Baraúna/RN",
+          sexo: "M",
+          cpf: "12345678900",
+          nis: "12345678901",
+          endereco: "Rua das Flores, 123",
+          cidade: "Baraúna",
+          estado: "RN",
+          cep: "59695-000",
+          telefone: "84999991111",
+          email: "pedro.almeida@email.com",
+          nomeMae: "Mariana Almeida",
+          nomePai: "José Almeida",
+          dataMatricula: new Date(),
+          situacao: "ATIVO",
         },
       },
     },
@@ -161,7 +171,19 @@ async function createUsers() {
       aluno: true,
     },
   });
-  console.log(`Aluno criado: ${aluno1.email}`);
+
+  // Criar responsável do aluno 1
+  await prisma.responsavel.create({
+    data: {
+      nome: "Mariana Almeida",
+      cpf: "98765432100",
+      email: "mariana.almeida@email.com",
+      telefone: "84999991111",
+      parentesco: "MAE",
+      alunoId: aluno1.aluno!.id,
+    },
+  });
+  console.log(`Aluno 1 e seu responsável criados: ${aluno1.email}`);
 
   const aluno2 = await prisma.user.create({
     data: {
@@ -173,9 +195,19 @@ async function createUsers() {
         create: {
           matricula: "20240002",
           dataNascimento: new Date("2007-10-22"),
-          responsavel: "Roberto Ferreira",
-          telefone: "(84) 99999-2222",
-          endereco: "Av. Principal, 456 - Baraúna/RN",
+          sexo: "F",
+          cpf: "23456789001",
+          nis: "23456789002",
+          endereco: "Av. Principal, 456",
+          cidade: "Baraúna",
+          estado: "RN",
+          cep: "59695-000",
+          telefone: "84999992222",
+          email: "julia.ferreira@email.com",
+          nomeMae: "Roberta Ferreira",
+          nomePai: "Roberto Ferreira",
+          dataMatricula: new Date(),
+          situacao: "ATIVO",
         },
       },
     },
@@ -183,7 +215,19 @@ async function createUsers() {
       aluno: true,
     },
   });
-  console.log(`Aluno criado: ${aluno2.email}`);
+
+  // Criar responsável do aluno 2
+  await prisma.responsavel.create({
+    data: {
+      nome: "Roberto Ferreira",
+      cpf: "87654321001",
+      email: "roberto.ferreira@email.com",
+      telefone: "84999992222",
+      parentesco: "PAI",
+      alunoId: aluno2.aluno!.id,
+    },
+  });
+  console.log(`Aluno 2 e seu responsável criados: ${aluno2.email}`);
 
   const aluno3 = await prisma.user.create({
     data: {
@@ -195,9 +239,19 @@ async function createUsers() {
         create: {
           matricula: "20240003",
           dataNascimento: new Date("2009-03-10"),
-          responsavel: "Fernanda Rodrigues",
-          telefone: "(84) 99999-3333",
-          endereco: "Rua do Comércio, 789 - Baraúna/RN",
+          sexo: "M",
+          cpf: "34567890102",
+          nis: "34567890103",
+          endereco: "Rua do Comércio, 789",
+          cidade: "Baraúna",
+          estado: "RN",
+          cep: "59695-000",
+          telefone: "84999993333",
+          email: "lucas.rodrigues@email.com",
+          nomeMae: "Fernanda Rodrigues",
+          nomePai: "Paulo Rodrigues",
+          dataMatricula: new Date(),
+          situacao: "ATIVO",
         },
       },
     },
@@ -205,7 +259,19 @@ async function createUsers() {
       aluno: true,
     },
   });
-  console.log(`Aluno criado: ${aluno3.email}`);
+
+  // Criar responsável do aluno 3
+  await prisma.responsavel.create({
+    data: {
+      nome: "Fernanda Rodrigues",
+      cpf: "76543210002",
+      email: "fernanda.rodrigues@email.com",
+      telefone: "84999993333",
+      parentesco: "MAE",
+      alunoId: aluno3.aluno!.id,
+    },
+  });
+  console.log(`Aluno 3 e seu responsável criados: ${aluno3.email}`);
 }
 
 // Handler para GET

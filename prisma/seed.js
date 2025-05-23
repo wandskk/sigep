@@ -159,9 +159,14 @@ function main() {
                                     create: {
                                         matricula: "2024001",
                                         dataNascimento: new Date("2000-01-01"),
-                                        responsavel: "Responsável",
-                                        telefone: "(11) 99999-9999",
+                                        sexo: client_1.Sexo.M,
                                         endereco: "Rua do Aluno, 123",
+                                        cidade: "São Paulo",
+                                        estado: "SP",
+                                        cep: "01234-567",
+                                        nomeMae: "Maria da Silva",
+                                        dataMatricula: new Date(),
+                                        situacao: client_1.Situacao.ATIVO
                                     },
                                 },
                             },

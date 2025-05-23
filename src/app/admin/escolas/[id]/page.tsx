@@ -186,8 +186,6 @@ export default function EditSchoolPage({ params }: { params: { id: string } }) {
       setSuccess(null);
       setError(null);
 
-      console.log("Dados a serem enviados:", data);
-
       const response = await fetch(`/api/admin/schools/${schoolId}`, {
         method: "PUT",
         headers: {
@@ -197,28 +195,16 @@ export default function EditSchoolPage({ params }: { params: { id: string } }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        let errorMessage = "Erro ao atualizar escola";
-        
-        try {
-          // Tenta converter para JSON se for uma resposta JSON
-          const jsonError = JSON.parse(errorData);
-          errorMessage = jsonError.message || errorMessage;
-        } catch {
-          // Se não for JSON, usa o texto como está
-          errorMessage = errorData || errorMessage;
-        }
-        
-        throw new Error(errorMessage);
+        throw new Error("Erro ao atualizar escola");
       }
 
       const updatedSchool = await response.json();
       setSchool(updatedSchool);
       setSuccess("Escola atualizada com sucesso!");
 
-      // Força uma atualização da página após 1 segundo para garantir que os dados sejam atualizados
+      // Redireciona para a página de escolas após 1 segundo
       setTimeout(() => {
-        router.refresh();
+        router.push("/admin/escolas");
       }, 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao atualizar escola");

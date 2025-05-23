@@ -1,4 +1,4 @@
-import { compare, hash } from "bcrypt";
+import { compare, hash } from "bcryptjs";
 import { prisma } from "./prisma-adapter";
 import { UserRole } from "@prisma/client";
 import crypto from "crypto";

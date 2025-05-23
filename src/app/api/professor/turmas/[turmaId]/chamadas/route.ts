@@ -18,7 +18,7 @@ export async function GET(
     const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== "PROFESSOR") {
-      return new NextResponse("Não autorizado", { status: 401 });
+      return new Response("Não autorizado", { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -116,20 +116,9 @@ export async function GET(
       b.data.localeCompare(a.data)
     );
 
-    // Adicionar log para depuração
-    console.log("Exemplo da primeira chamada (se houver):", 
-      chamadas.length > 0 ? 
-      { 
-        data: chamadas[0].data, 
-        totalAlunos: chamadas[0].totalAlunos,
-        alunosExemplo: chamadas[0].alunos.slice(0, 2)
-      } : 
-      "Nenhuma chamada encontrada"
-    );
-
     return NextResponse.json(chamadas);
   } catch (error) {
-    console.error("[CHAMADAS_GET]", error);
+    console.error("Erro ao buscar chamadas:", error);
     return new NextResponse("Erro interno do servidor", { status: 500 });
   }
 } 

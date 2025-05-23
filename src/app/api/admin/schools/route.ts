@@ -19,56 +19,28 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== UserRole.ADMIN) {
-      return NextResponse.json(
-        { message: "Não autorizado" },
-        { status: 401 }
-      );
+    if (!session || session.user.role !== "ADMIN") {
+      return new Response("Não autorizado", { status: 401 });
     }
 
     const body = await request.json();
-    console.log('Dados recebidos para criação de escola:', body);
-    let validatedData;
-    try {
-      validatedData = createSchoolSchema.parse(body);
-    } catch (zodError) {
-      console.error('Erro de validação Zod:', zodError);
-      return NextResponse.json(
-        { message: "Dados inválidos", errors: zodError.errors },
-        { status: 400 }
-      );
-    }
 
-    // Verificar se já existe uma escola com o mesmo email
-    const existingSchool = await prisma.school.findUnique({
-      where: { email: validatedData.email },
+    const escola = await prisma.school.create({
+      data: {
+        name: body.name,
+        address: body.address,
+        city: body.city,
+        state: body.state,
+        email: body.email,
+        phone: body.phone,
+        website: body.website,
+      },
     });
 
-    if (existingSchool) {
-      return NextResponse.json(
-        { message: "Já existe uma escola cadastrada com este email" },
-        { status: 400 }
-      );
-    }
-
-    try {
-      const school = await prisma.school.create({
-        data: validatedData,
-      });
-      return NextResponse.json(school, { status: 201 });
-    } catch (dbError) {
-      console.error('Erro ao criar escola no banco:', dbError);
-      return NextResponse.json(
-        { message: "Erro ao criar escola no banco de dados", error: dbError },
-        { status: 500 }
-      );
-    }
+    return Response.json(escola);
   } catch (error) {
-    console.error("Erro inesperado ao criar escola:", error);
-    return NextResponse.json(
-      { message: "Erro inesperado ao criar escola", error },
-      { status: 500 }
-    );
+    console.error("Erro ao criar escola:", error);
+    return new Response("Erro interno do servidor", { status: 500 });
   }
 }
 

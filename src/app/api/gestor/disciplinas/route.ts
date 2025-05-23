@@ -43,6 +43,7 @@ export async function GET(request: Request) {
       select: {
         id: true,
         nome: true,
+        codigo: true,
       },
       orderBy: {
         nome: "asc",

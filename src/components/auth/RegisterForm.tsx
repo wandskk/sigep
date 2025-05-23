@@ -24,7 +24,7 @@ export function RegisterForm() {
     },
   });
 
-  async function onSubmit(data: RegisterFormValues) {
+  const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     
     try {
@@ -39,7 +39,7 @@ export function RegisterForm() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto p-6 space-y-6 bg-white rounded-lg shadow-md">

@@ -3,7 +3,7 @@
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
 // Variantes de botão disponíveis
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error" | "danger" | "success";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error" | "danger" | "success" | "destructive";
 // Tamanhos de botão disponíveis
 type ButtonSize = "sm" | "md" | "lg";
 
@@ -42,6 +42,7 @@ export function Button({
     error: "bg-[#EF4444] text-white hover:bg-[#EF4444]/90",
     danger: "bg-red-600 text-white hover:bg-red-700",
     success: "bg-green-600 text-white hover:bg-green-700",
+    destructive: "bg-red-600 text-white hover:bg-red-700",
   };
 
   // Mapeia tamanhos para classes de estilo

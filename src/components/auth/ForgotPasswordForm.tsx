@@ -25,13 +25,10 @@ export function ForgotPasswordForm() {
     },
   });
 
-  async function onSubmit(data: ForgotPasswordFormValues) {
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsLoading(true);
     
     try {
-      // Aqui seria implementada a lógica de recuperação de senha
-      console.log("Dados do formulário:", data);
-      
       // Simula um atraso de 1 segundo
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
@@ -42,7 +39,7 @@ export function ForgotPasswordForm() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   // Exibe mensagem de sucesso após o envio
   if (isSubmitted) {

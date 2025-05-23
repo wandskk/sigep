@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
@@ -45,6 +39,38 @@ enum Bimestre {
   QUARTO
 }
 
+// Enum para o sexo do aluno
+enum Sexo {
+  M
+  F
+  OUTRO
+}
+
+// Enum para a situação do aluno
+enum Situacao {
+  ATIVO
+  TRANSFERIDO
+  EVADIDO
+  CONCLUIDO
+}
+
+// Enum para o parentesco do responsável
+enum Parentesco {
+  PAI
+  MAE
+  AVO
+  TIO
+  OUTRO
+}
+
+// Enum para os tipos de ocorrências
+enum TipoOcorrencia {
+  ADVERTENCIA
+  ELOGIO
+  COMUNICADO
+  OUTRO
+}
+
 // Modelo de usuário para autenticação
 model User {
   id            String    @id @default(uuid())
@@ -64,6 +90,7 @@ model User {
   professor  Professor?
   gestor     Gestor?
   secretaria Secretaria?
+  ocorrenciasRegistradas Ocorrencia[]  @relation("AutorOcorrencia")
 
   @@map("users")
 }
@@ -127,21 +154,49 @@ model PasswordReset {
   @@map("password_resets")
 }
 
+// Modelo para responsáveis
+model Responsavel {
+  id        String     @id @default(cuid())
+  nome      String
+  cpf       String     @unique
+  email     String
+  telefone  String
+  endereco  String
+  parentesco Parentesco
+  aluno     Aluno      @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  alunoId   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([alunoId])
+}
+
 // Modelo para alunos
 model Aluno {
-  id             String   @id @default(uuid())
-  userId         String   @unique
-  matricula      String   @unique
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  matricula      String    @unique
   dataNascimento DateTime
-  responsavel    String?
+  sexo           Sexo
+  cpf            String?   @unique
+  nis            String?   @unique
+  endereco       String
+  cidade         String
+  estado         String
+  cep            String
   telefone       String?
-  endereco       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  email          String?
+  nomeMae        String
+  nomePai        String?
+  dataMatricula  DateTime
+  situacao       Situacao  @default(ATIVO)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  ocorrencias    Ocorrencia[]
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  turmas         AlunoTurma[]
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responsaveis Responsavel[]
+  turmas       AlunoTurma[]
 
   @@map("alunos")
 }
@@ -204,6 +259,7 @@ model School {
   gestorId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  ocorrencias Ocorrencia[]
 
   gestor      Gestor?     @relation(fields: [gestorId], references: [id])
   turmas      Turma[]
@@ -344,4 +400,25 @@ model Nota {
 
   @@unique([alunoTurmaId, disciplinaId, tipo, bimestre, data])
   @@map("notas")
+}
+
+// Modelo para ocorrências
+model Ocorrencia {
+  id                    String         @id @default(uuid())
+  aluno                 Aluno          @relation(fields: [alunoId], references: [id])
+  alunoId               String
+  escola                School         @relation(fields: [escolaId], references: [id])
+  escolaId              String
+  autor                 User           @relation("AutorOcorrencia", fields: [autorId], references: [id])
+  autorId               String
+  tipo                  TipoOcorrencia
+  titulo                String
+  descricao             String
+  dataOcorrencia        DateTime
+  dataRegistro          DateTime       @default(now())
+  visivelParaResponsavel Boolean       @default(false)
+
+  @@index([alunoId])
+  @@index([escolaId])
+  @@index([autorId])
 }

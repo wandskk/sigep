@@ -42,28 +42,63 @@ export async function GET(
     }
 
     // Busca os alunos disponíveis (que não estão em nenhuma turma ou estão na turma atual)
-    const alunos = await (prisma as any).aluno.findMany({
+    const alunos = await prisma.aluno.findMany({
       where: {
-        escolaId: gestor.escolaId,
-        OR: [
-          { turmaId: null },
-          { turmaId: params.id },
-        ],
+        AND: [
+          {
+            user: {
+              role: "ALUNO"
+            }
+          },
+          {
+            OR: [
+              {
+                turmas: {
+                  none: {}
+                }
+              },
+              {
+                turmas: {
+                  some: {
+                    turmaId: params.id
+                  }
+                }
+              }
+            ]
+          }
+        ]
       },
-      select: {
-        id: true,
-        nome: true,
-        matricula: true,
-        email: true,
-        dataNascimento: true,
-        turmaId: true,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        turmas: {
+          select: {
+            turmaId: true
+          }
+        }
       },
       orderBy: {
-        nome: "asc",
-      },
+        user: {
+          name: "asc"
+        }
+      }
     });
 
-    return NextResponse.json(alunos);
+    // Formata os dados para retorno
+    const alunosFormatados = alunos.map(aluno => ({
+      id: aluno.id,
+      nome: aluno.user.name,
+      matricula: aluno.matricula,
+      email: aluno.user.email,
+      dataNascimento: aluno.dataNascimento,
+      turmaId: aluno.turmas[0]?.turmaId || null
+    }));
+
+    return NextResponse.json(alunosFormatados);
   } catch (error) {
     console.error("Erro ao buscar alunos disponíveis:", error);
     return new NextResponse("Erro interno do servidor", { status: 500 });
