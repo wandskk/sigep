@@ -150,7 +150,10 @@ export async function POST(request: Request) {
       id: professor.id,
       nome: usuario.name,
       email: usuario.email,
-      escola: gestor.escolas[0].name,
+      escola: {
+        id: gestor.escolas[0].id,
+        nome: gestor.escolas[0].name
+      },
       senhaTemporaria, // Incluir apenas em ambiente de desenvolvimento
     });
   } catch (error) {

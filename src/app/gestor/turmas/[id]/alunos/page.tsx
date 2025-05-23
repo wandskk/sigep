@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { VoltarButton } from "./components/VoltarButton";
 import { TabelaAlunos } from "./components/TabelaAlunos";
-import { getTurmaWithAlunos } from "@/lib/actions/turma";
+import { getTurmaWithAlunos } from "@/lib/actions/turma/turma.actions";
 import { formatarAlunosTurma } from "@/lib/utils/turma";
 import { UserRole } from "@prisma/client";
 import { getGestorByUserId } from "@/lib/actions/gestor";

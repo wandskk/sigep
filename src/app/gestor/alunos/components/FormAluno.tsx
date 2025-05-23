@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { Select } from "@/components/ui/Select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
+import { Label } from "@/components/ui/Label";
 
 const alunoSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
@@ -35,6 +36,7 @@ export function FormAluno({ escolaId, onSuccess }: FormAlunoProps) {
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm<AlunoFormData>({
     resolver: zodResolver(alunoSchema),
   });
@@ -115,19 +117,29 @@ export function FormAluno({ escolaId, onSuccess }: FormAlunoProps) {
         />
       </div>
 
-      <div>
-        <Select
-          label="Turma"
-          {...register("turmaId")}
-          error={errors.turmaId?.message}
-        >
-          <option value="">Selecione uma turma</option>
-          {turmas.map((turma) => (
-            <option key={turma.id} value={turma.id}>
-              {turma.nome} ({turma.codigo})
-            </option>
-          ))}
-        </Select>
+      <div className="space-y-2">
+        <Label htmlFor="turmaId">Turma</Label>
+        <Controller
+          name="turmaId"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma turma" />
+              </SelectTrigger>
+              <SelectContent>
+                {turmas.map((turma) => (
+                  <SelectItem key={turma.id} value={turma.id}>
+                    {turma.nome} ({turma.codigo})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.turmaId?.message && (
+          <p className="mt-1 text-sm text-red-600">{errors.turmaId.message}</p>
+        )}
       </div>
 
       <div>

@@ -6,7 +6,7 @@ import TurmaContent from "@/app/gestor/turmas/[id]/components/TurmaContent";
 import { UserRole } from "@prisma/client";
 import { TurmaCompleta, ProfessorInfo, DisciplinaBasica } from "@/lib/types";
 import { formatarTurma, formatarProfessores, formatarDisciplinas } from "@/lib/utils/turma";
-import { getTurmaPageData } from "@/lib/actions/turma";
+import { getTurmaPageData } from "@/lib/actions/turma/turma.actions";
 
 // Tipo para os dados formatados da turma que serão passados para o componente
 interface TurmaPageData {

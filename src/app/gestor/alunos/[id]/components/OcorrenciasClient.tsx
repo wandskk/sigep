@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Select } from "@/components/ui/Select";
+import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -198,21 +198,6 @@ export function OcorrenciasClient({ alunoId, ocorrenciasIniciais }: OcorrenciasC
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {Object.entries(estatisticas).map(([tipo, quantidade]) => (
-          <div 
-            key={tipo}
-            className={`rounded-xl border p-6 flex flex-col items-center transition-all duration-200 ${getCardStyle(tipo as TipoOcorrencia)}`}
-          >
-            <span className="text-lg font-semibold mb-2">{tipo}</span>
-            <span className="text-4xl font-bold">{quantidade}</span>
-            <div className="mt-2 text-sm opacity-75">
-              {quantidade === 1 ? 'ocorrência' : 'ocorrências'}
-            </div>
-          </div>
-        ))}
-      </div>
-
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -223,14 +208,18 @@ export function OcorrenciasClient({ alunoId, ocorrenciasIniciais }: OcorrenciasC
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <Select
               value={filtroTipo}
-              onChange={(e) => setFiltroTipo(e.target.value as TipoOcorrencia | "TODOS")}
-              className="w-48 pl-9 bg-white border-gray-200 text-gray-700 hover:border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+              onValueChange={(value) => setFiltroTipo(value as TipoOcorrencia | "TODOS")}
             >
-              <option value="TODOS">Todos os tipos</option>
-              <option value={TipoOcorrencia.ADVERTENCIA}>Advertências</option>
-              <option value={TipoOcorrencia.ELOGIO}>Elogios</option>
-              <option value={TipoOcorrencia.COMUNICADO}>Comunicados</option>
-              <option value={TipoOcorrencia.OUTRO}>Outros</option>
+              <SelectTrigger className="w-48 pl-9 bg-white border-gray-200 text-gray-700 hover:border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg">
+                <SelectValue placeholder="Filtrar por tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TODOS">Todos os tipos</SelectItem>
+                <SelectItem value={TipoOcorrencia.ADVERTENCIA}>Advertências</SelectItem>
+                <SelectItem value={TipoOcorrencia.ELOGIO}>Elogios</SelectItem>
+                <SelectItem value={TipoOcorrencia.COMUNICADO}>Comunicados</SelectItem>
+                <SelectItem value={TipoOcorrencia.OUTRO}>Outros</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </div>
@@ -342,15 +331,22 @@ export function OcorrenciasClient({ alunoId, ocorrenciasIniciais }: OcorrenciasC
             <div className="space-y-2">
               <Label htmlFor="tipo">Tipo</Label>
               <Select
-                id="tipo"
-                {...form.register("tipo")}
-                error={form.formState.errors.tipo?.message}
+                value={form.watch("tipo")}
+                onValueChange={(value) => form.setValue("tipo", value as TipoOcorrencia)}
               >
-                <option value={TipoOcorrencia.ADVERTENCIA}>Advertência</option>
-                <option value={TipoOcorrencia.ELOGIO}>Elogio</option>
-                <option value={TipoOcorrencia.COMUNICADO}>Comunicado</option>
-                <option value={TipoOcorrencia.OUTRO}>Outro</option>
+                <SelectTrigger id="tipo" className={form.formState.errors.tipo ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TipoOcorrencia.ADVERTENCIA}>Advertência</SelectItem>
+                  <SelectItem value={TipoOcorrencia.ELOGIO}>Elogio</SelectItem>
+                  <SelectItem value={TipoOcorrencia.COMUNICADO}>Comunicado</SelectItem>
+                  <SelectItem value={TipoOcorrencia.OUTRO}>Outro</SelectItem>
+                </SelectContent>
               </Select>
+              {form.formState.errors.tipo && (
+                <p className="text-sm text-red-500 mt-1">{form.formState.errors.tipo.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">

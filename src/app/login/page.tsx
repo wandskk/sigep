@@ -1,9 +1,9 @@
-import { Suspense } from "react";
-import { LoginForm } from "@/components/auth/LoginForm";
 import { Metadata } from "next";
+import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
   title: "Entrar",
+  description: "Faça login no SIGEP",
 };
 
 export default function LoginPage() {
@@ -30,7 +30,7 @@ export default function LoginPage() {
           <div className="text-center text-white p-8">
             <h1 className="text-5xl font-bold mb-4">SIGEP</h1>
             <p className="text-xl font-light mb-6">
-              Sistema de Gestão Escolar Pública de Baraúna
+              Sistema Integrado de Gestão Escolar de Baraúna/RN
             </p>
             <div className="w-20 h-1 bg-[#10B981] mx-auto"></div>
             <p className="mt-8 text-white/80 max-w-md mx-auto">
@@ -43,9 +43,7 @@ export default function LoginPage() {
 
       {/* Lado direito - Formulário de login */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-[#F3F4F6] p-6">
-        <Suspense fallback={<div>Carregando...</div>}>
-          <LoginForm />
-        </Suspense>
+        <LoginForm />
       </div>
     </div>
   );

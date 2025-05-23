@@ -1,6 +1,7 @@
 "use client";
 
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
+import { Suspense } from "react";
 
 export default function ForgotPasswordPage() {
   return (
@@ -39,7 +40,9 @@ export default function ForgotPasswordPage() {
 
       {/* Lado direito - Formulário de recuperação de senha */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-[#F3F4F6] p-6">
-        <ForgotPasswordForm />
+        <Suspense fallback={<div>Carregando...</div>}>
+          <ForgotPasswordForm />
+        </Suspense>
       </div>
     </div>
   );

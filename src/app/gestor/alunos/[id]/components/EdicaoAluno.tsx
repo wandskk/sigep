@@ -303,10 +303,7 @@ export function EdicaoAluno({ aluno }: EdicaoAlunoProps) {
             {editando === "adicionais" ? (
               <Select
                 value={dadosEditados.situacao ?? aluno.situacao}
-                onChange={(e) =>
-                  handleChange("adicionais.situacao", e.target.value)
-                }
-                className="w-full bg-white"
+                onValueChange={(value) => handleChange("adicionais.situacao", value)}
               >
                 <option value="ATIVO">Ativo</option>
                 <option value="INATIVO">Inativo</option>

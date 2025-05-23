@@ -5,8 +5,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Responsavel } from "./components/Responsavel";
 import { EdicaoAluno } from "./components/EdicaoAluno";
-import { Ocorrencias } from "./components/Ocorrencias";
-import { UserRole } from "@prisma/client";
+import { OcorrenciasClient } from "./components/OcorrenciasClient";
+import { UserRole, TipoOcorrencia } from "@prisma/client";
 import { getAlunoById } from "@/lib/actions/aluno";
 import { getGestorByUserId } from "@/lib/actions/gestor";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +14,6 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { TipoOcorrencia } from "@prisma/client";
 
 interface PageProps {
   params: {
@@ -47,8 +46,28 @@ async function getResumoOcorrencias(alunoId: string) {
   return counts;
 }
 
+async function getOcorrenciasIniciais(alunoId: string) {
+  const ocorrencias = await prisma.ocorrencia.findMany({
+    where: { alunoId },
+    include: {
+      autor: {
+        select: {
+          id: true,
+          name: true,
+          role: true
+        }
+      }
+    },
+    orderBy: {
+      dataOcorrencia: 'desc'
+    }
+  });
+
+  return ocorrencias;
+}
+
 export default async function AlunoPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id } = params;
   let aluno;
   let error: string | null = null;
 
@@ -75,7 +94,10 @@ export default async function AlunoPage({ params }: PageProps) {
     throw new Error("Aluno não encontrado");
   }
 
-  const resumoOcorrencias = await getResumoOcorrencias(id);
+  const [resumoOcorrencias, ocorrenciasIniciais] = await Promise.all([
+    getResumoOcorrencias(id),
+    getOcorrenciasIniciais(id)
+  ]);
 
   const getTagStyle = (tipo: string) => {
     switch (tipo.toUpperCase()) {
@@ -138,9 +160,12 @@ export default async function AlunoPage({ params }: PageProps) {
               {error || "Não foi possível carregar os dados do aluno"}
             </Alert>
             <Link href="/gestor/alunos">
-              <Button variant="outline" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Voltar para Lista de Alunos
+              <Button
+                variant="outline"
+                className="group flex items-center gap-2 mb-4 bg-white/50 backdrop-blur-sm border-blue-900/20 text-blue-900 hover:bg-blue-50 hover:border-blue-900/30 transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                <span>Voltar para Lista de Alunos</span>
               </Button>
             </Link>
           </div>
@@ -207,7 +232,10 @@ export default async function AlunoPage({ params }: PageProps) {
               </TabsContent>
 
               <TabsContent value="ocorrencias">
-                <Ocorrencias alunoId={aluno.id} />
+                <OcorrenciasClient 
+                  alunoId={aluno.id} 
+                  ocorrenciasIniciais={ocorrenciasIniciais} 
+                />
               </TabsContent>
             </div>
           </Tabs>

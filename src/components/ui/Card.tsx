@@ -1,13 +1,13 @@
 "use client";
 
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   title?: string;
   subtitle?: string;
   footer?: ReactNode;
-  className?: string;
   variant?: "default" | "outline" | "filled";
   onClick?: () => void;
 }
@@ -20,6 +20,7 @@ export function Card({
   className = "",
   variant = "default",
   onClick,
+  ...props
 }: CardProps) {
   const variantStyles = {
     default: "bg-white border border-gray-200 shadow-sm",
@@ -29,13 +30,14 @@ export function Card({
 
   return (
     <div
-      className={`
-        rounded-lg overflow-hidden
-        ${variantStyles[variant]}
-        ${onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}
-        ${className}
-      `}
+      className={cn(
+        "rounded-lg overflow-hidden",
+        variantStyles[variant],
+        onClick ? "cursor-pointer hover:shadow-md transition-shadow" : "",
+        className
+      )}
       onClick={onClick}
+      {...props}
     >
       {(title || subtitle) && (
         <div className="px-6 py-4 border-b border-gray-200">
@@ -53,4 +55,35 @@ export function Card({
       )}
     </div>
   );
+}
+
+interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function CardHeader({ className, ...props }: CardHeaderProps) {
+  return (
+    <div
+      className={cn("flex flex-col space-y-1.5 p-6", className)}
+      {...props}
+    />
+  );
+}
+
+interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+
+export function CardTitle({ className, ...props }: CardTitleProps) {
+  return (
+    <h3
+      className={cn(
+        "text-lg font-semibold leading-none tracking-tight",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function CardContent({ className, ...props }: CardContentProps) {
+  return <div className={cn("p-6 pt-0", className)} {...props} />;
 } 

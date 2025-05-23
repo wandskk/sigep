@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,7 +21,15 @@ const senhaSchema = z.object({
 
 type SenhaFormData = z.infer<typeof senhaSchema>;
 
-export default function TrocarSenhaPage() {
+export default function TrocarSenhaPageWrapper() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <TrocarSenhaPage />
+    </Suspense>
+  );
+}
+
+function TrocarSenhaPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +78,9 @@ export default function TrocarSenhaPage() {
     switch (session.user.role) {
       case "PROFESSOR":
         router.push("/professor");
+        break;
+      case "SECRETARIA":
+        router.push("/secretaria");
         break;
       case "GESTOR":
         router.push("/gestor");
