@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== UserRole.GESTOR) {
+    if (!session || (session.user.role !== UserRole.GESTOR && session.user.role !== UserRole.ADMIN)) {
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
@@ -42,8 +42,8 @@ export async function POST(
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
-    // Verifica se o usuário é um gestor
-    if (session.user.role !== UserRole.GESTOR) {
+    // Verifica se o usuário é um gestor ou admin
+    if (session.user.role !== UserRole.GESTOR && session.user.role !== UserRole.ADMIN) {
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
@@ -55,28 +55,41 @@ export async function POST(
       return new NextResponse("Dados incompletos", { status: 400 });
     }
 
-    // Verifica se o aluno existe e se o gestor tem acesso
-    const aluno = await prisma.aluno.findFirst({
+    // Verifica se o aluno existe
+    const aluno = await prisma.aluno.findUnique({
       where: {
         id: alunoId,
-        turmas: {
-          some: {
-            turma: {
-              escola: {
-                gestor: {
-                  userId: session.user.id,
-                },
-              },
-            },
-          },
-        },
       },
     });
 
     if (!aluno) {
-      return new NextResponse("Aluno não encontrado ou sem permissão", {
-        status: 404,
+      return new NextResponse("Aluno não encontrado", { status: 404 });
+    }
+
+    // Se for gestor, verifica se tem acesso ao aluno
+    if (session.user.role === UserRole.GESTOR) {
+      const gestor = await prisma.gestor.findFirst({
+        where: {
+          userId: session.user.id,
+          escolas: {
+            some: {
+              turmas: {
+                some: {
+                  alunos: {
+                    some: {
+                      alunoId: alunoId
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       });
+
+      if (!gestor) {
+        return new NextResponse("Acesso negado", { status: 403 });
+      }
     }
 
     // Verifica se o CPF já está em uso
