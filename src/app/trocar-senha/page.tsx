@@ -9,6 +9,8 @@ import * as z from "zod";
 import { Alert } from "@/components/ui/Alert";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useAuthState } from "@/hooks/useAuthState";
 
 const senhaSchema = z.object({
   currentPassword: z.string().min(1, "Senha atual é obrigatória"),
@@ -31,6 +33,7 @@ export default function TrocarSenhaPageWrapper() {
 
 function TrocarSenhaPage() {
   const { data: session, status, update } = useSession();
+  const { isAuthenticated, isFirstLogin, refreshAuthState } = useAuthState();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,28 +52,21 @@ function TrocarSenhaPage() {
     // Redireciona para o login se não estiver autenticado
     if (status === "unauthenticated") {
       router.push("/login");
-    } else if (status === "authenticated") {
-      // Verifica se o usuário precisa trocar a senha
-      checkFirstLogin();
+      return;
     }
-  }, [status, router]);
 
-  const checkFirstLogin = async () => {
-    try {
-      const response = await fetch("/api/auth/check-first-login");
-      const data = await response.json();
-      
-      // Se não for o primeiro login, redireciona para o dashboard apropriado
-      if (!data.firstLogin) {
+    // Se estiver autenticado, verificar o status do primeiro login
+    if (status === "authenticated" && isFirstLogin !== null) {
+      if (!isFirstLogin) {
         redirectToDashboard();
+        return;
+      } else {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    } catch (err) {
-      setError("Erro ao verificar status do usuário");
-      setIsLoading(false);
     }
-  };
+  }, [status, isFirstLogin, router]);
+
+
 
   const redirectToDashboard = () => {
     if (!session) return;
@@ -116,15 +112,16 @@ function TrocarSenhaPage() {
         throw new Error(result.message || "Erro ao alterar senha");
       }
 
-      setSuccess("Senha alterada com sucesso!");
+      setSuccess("Senha alterada com sucesso! Redirecionando...");
       
-      // Atualizar a sessão para refletir que não é mais o primeiro login
-      await update();
+      // Atualizar o estado de autenticação
+      await refreshAuthState();
       
-      // Redirecionar após 2 segundos
-      setTimeout(() => {
-        redirectToDashboard();
-      }, 2000);
+      // Aguardar um pouco para garantir que a atualização seja processada
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Redirecionar
+      redirectToDashboard();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao alterar senha");
     } finally {
@@ -134,9 +131,7 @@ function TrocarSenhaPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E3A8A]"></div>
-      </div>
+      <LoadingSpinner message="Verificando status de autenticação..." />
     );
   }
 

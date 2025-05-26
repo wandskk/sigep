@@ -235,7 +235,6 @@ function main() {
                     _i++;
                     return [3 /*break*/, 21];
                 case 24:
-                    console.log("Seed concluído com sucesso!");
                     return [2 /*return*/];
             }
         });

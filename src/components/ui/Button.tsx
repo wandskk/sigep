@@ -3,7 +3,7 @@
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
 // Variantes de botão disponíveis
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error" | "danger" | "success" | "destructive";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error" | "danger" | "success" | "destructive" | "minimal" | "minimal-outline" | "minimal-ghost";
 // Tamanhos de botão disponíveis
 type ButtonSize = "sm" | "md" | "lg";
 
@@ -43,21 +43,24 @@ export function Button({
     danger: "bg-red-600 text-white hover:bg-red-700",
     success: "bg-green-600 text-white hover:bg-green-700",
     destructive: "bg-red-600 text-white hover:bg-red-700",
+    minimal: "bg-gray-100 text-gray-700 hover:bg-gray-200 border-0",
+    "minimal-outline": "bg-transparent border border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-700",
+    "minimal-ghost": "bg-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50",
   };
 
   // Mapeia tamanhos para classes de estilo
   const sizeStyles = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-base",
-    lg: "px-6 py-3 text-lg",
+    sm: "px-2 py-1 text-sm",
+    md: "px-3 py-1.5 text-sm",
+    lg: "px-4 py-2 text-base",
   };
 
   // Define classe base do botão
   const baseStyles = `
     inline-flex items-center justify-center 
     font-medium rounded-md 
-    transition-colors duration-200 
-    focus:outline-none
+    transition-all duration-150 
+    focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-300
     disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
@@ -99,9 +102,9 @@ export function Button({
         </svg>
       )}
       
-      {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
+      {!isLoading && leftIcon && <span className="mr-1.5">{leftIcon}</span>}
       {children}
-      {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
+      {!isLoading && rightIcon && <span className="ml-1.5">{rightIcon}</span>}
     </button>
   );
 } 

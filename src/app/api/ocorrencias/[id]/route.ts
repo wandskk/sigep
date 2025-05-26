@@ -18,7 +18,8 @@ export async function PUT(
     // Verificar se o usuário tem permissão
     if (
       session.user.role !== UserRole.GESTOR &&
-      session.user.role !== UserRole.PROFESSOR
+      session.user.role !== UserRole.PROFESSOR &&
+      session.user.role !== UserRole.ADMIN
     ) {
       return new NextResponse("Não autorizado", { status: 403 });
     }
@@ -36,10 +37,11 @@ export async function PUT(
       return new NextResponse("Ocorrência não encontrada", { status: 404 });
     }
 
-    // Apenas o autor ou um gestor pode editar a ocorrência
+    // Apenas o autor, um gestor ou um admin pode editar a ocorrência
     if (
       ocorrencia.autor.id !== session.user.id &&
-      session.user.role !== UserRole.GESTOR
+      session.user.role !== UserRole.GESTOR &&
+      session.user.role !== UserRole.ADMIN
     ) {
       return new NextResponse("Não autorizado", { status: 403 });
     }
@@ -80,7 +82,8 @@ export async function DELETE(
     // Verificar se o usuário tem permissão
     if (
       session.user.role !== UserRole.GESTOR &&
-      session.user.role !== UserRole.PROFESSOR
+      session.user.role !== UserRole.PROFESSOR &&
+      session.user.role !== UserRole.ADMIN
     ) {
       return new NextResponse("Não autorizado", { status: 403 });
     }
@@ -97,10 +100,11 @@ export async function DELETE(
       return new NextResponse("Ocorrência não encontrada", { status: 404 });
     }
 
-    // Apenas o autor ou um gestor pode excluir a ocorrência
+    // Apenas o autor, um gestor ou um admin pode excluir a ocorrência
     if (
       ocorrencia.autor.id !== session.user.id &&
-      session.user.role !== UserRole.GESTOR
+      session.user.role !== UserRole.GESTOR &&
+      session.user.role !== UserRole.ADMIN
     ) {
       return new NextResponse("Não autorizado", { status: 403 });
     }

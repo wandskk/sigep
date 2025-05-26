@@ -8,6 +8,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
+  icon?: ReactNode;
   className?: string;
   labelClassName?: string;
   errorClassName?: string;
@@ -21,6 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       error,
       leftIcon,
       rightIcon,
+      icon,
       className = "",
       labelClassName = "",
       errorClassName = "",
@@ -28,6 +30,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
+    const finalLeftIcon = icon || leftIcon;
+
     return (
       <div className="w-full">
         {label && (
@@ -40,9 +44,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         
         <div className="relative">
-          {leftIcon && (
+          {finalLeftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              {leftIcon}
+              {finalLeftIcon}
             </div>
           )}
           
@@ -56,7 +60,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               shadow-sm
               focus:outline-none focus:ring-1 focus:ring-[#1E3A8A] focus:border-[#1E3A8A]
               disabled:bg-[#F3F4F6] disabled:cursor-not-allowed
-              ${leftIcon ? "pl-10" : ""}
+              ${finalLeftIcon ? "pl-10" : ""}
               ${rightIcon ? "pr-10" : ""}
               ${error ? "border-[#EF4444] focus:ring-[#EF4444] focus:border-[#EF4444]" : "border-gray-300"}
               ${className}

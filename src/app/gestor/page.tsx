@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import { redirect } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { UserRole } from "@prisma/client";
-import { getGestorByUserId } from "@/lib/actions/gestor";
+import { getGestorByUserId, gestorHasEscolas } from "@/lib/actions/gestor";
 import { getTurmasByEscola } from "@/lib/actions/turma";
 import { getDashboardStats } from "@/lib/actions/dashboard";
 import { Metadata } from "next";
@@ -47,24 +47,44 @@ export default async function GestorDashboard() {
   // Busca dados do gestor e escola usando a action
   const gestor = await getGestorByUserId(session.user.id);
 
-  if (!gestor || gestor.escolas.length === 0) {
-    throw new Error("Gestor não encontrado ou sem escolas");
+  if (!gestor) {
+    error = "Gestor não encontrado";
+  } else {
+    // Verifica se o gestor tem escolas
+    const hasEscolas = await gestorHasEscolas(gestor.id);
+
+    if (!hasEscolas || gestor.escolas.length === 0) {
+      error = "Gestor não possui escolas associadas";
+    } else {
+      escolaId = gestor.escolas[0].id;
+    }
   }
 
-  escolaId = gestor.escolas[0].id;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F3F4F6]">
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+            <Alert variant="error" className="mb-6">
+              {error}
+            </Alert>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Busca as turmas e estatísticas da escola usando as actions
   try {
     const [turmasData, statsData] = await Promise.all([
-      getTurmasByEscola(escolaId),
-      getDashboardStats(escolaId),
+      getTurmasByEscola(escolaId!),
+      getDashboardStats(escolaId!),
     ]);
 
     turmas = turmasData as Turma[];
     stats = statsData as DashboardStats;
   } catch (err) {
     error = "Não foi possível carregar os dados do dashboard";
-    console.error("Erro ao buscar dados do dashboard:", err);
   }
 
   if (error || !escolaId || !stats) {
@@ -83,7 +103,7 @@ export default async function GestorDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">
-      <div className="max-w-7xl mx-auto  ">
+      <div className="max-w-7xl mx-auto">
         <div className="">
           <DashboardContent turmasIniciais={turmas} statsIniciais={stats} />
         </div>

@@ -253,10 +253,11 @@ export function ModalDisciplinas({
               </>
             )}
 
-            <div className="flex justify-end space-x-2 mt-6">
+            <div className="flex justify-end gap-2 mt-6">
               <Button
                 type="button"
-                variant="secondary"
+                variant="minimal-ghost"
+                size="sm"
                 onClick={onClose}
                 disabled={isSubmitting}
               >
@@ -264,7 +265,8 @@ export function ModalDisciplinas({
               </Button>
               <Button
                 type="button"
-                variant="primary"
+                variant="minimal"
+                size="sm"
                 onClick={handleSubmit}
                 disabled={
                   isSubmitting ||

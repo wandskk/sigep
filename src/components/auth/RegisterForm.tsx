@@ -29,7 +29,6 @@ export function RegisterForm() {
     
     try {
       // Aqui seria implementada a lógica de registro
-      console.log("Dados do formulário:", data);
       
       // Simula um atraso de 1 segundo
       await new Promise((resolve) => setTimeout(resolve, 1000));

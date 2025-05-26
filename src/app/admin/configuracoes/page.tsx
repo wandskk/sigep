@@ -2,10 +2,11 @@
 
 import { Card } from "@/components/ui/Card";
 import { Alert } from "@/components/ui/Alert";
+import { Container } from "@/components/layout/Container";
 
 export default function ConfiguracoesPage() {
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <Container>
       <h1 className="text-2xl font-bold mb-6">Configurações do Sistema</h1>
       <Card className="mb-6">
         <div className="p-4">
@@ -17,6 +18,6 @@ export default function ConfiguracoesPage() {
       <Alert variant="info" title="Em breve">
         Funcionalidades de configuração do sistema estarão disponíveis nesta página.
       </Alert>
-    </div>
+    </Container>
   );
 } 

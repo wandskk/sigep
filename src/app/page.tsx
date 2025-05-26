@@ -1,8 +1,5 @@
-"use client";
-
-import { redirect } from "next/navigation";
+import { HomePageWrapper } from "@/components/auth/HomePageWrapper";
 
 export default function Home() {
-  // Redirecionar para a página de login
-  redirect("/login");
+  return <HomePageWrapper />;
 }

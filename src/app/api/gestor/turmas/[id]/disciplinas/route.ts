@@ -11,7 +11,7 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "GESTOR") {
+    if (!session || (session.user.role !== "GESTOR" && session.user.role !== "ADMIN")) {
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
@@ -23,29 +23,31 @@ export async function POST(
       });
     }
 
-    // Busca o gestor e suas escolas
-    const gestor = await prisma.gestor.findFirst({
-      where: {
-        userId: session.user.id,
-      },
-      include: {
-        escolas: true,
-      },
-    });
+    let escolasIds: string[] = [];
 
-    if (!gestor || gestor.escolas.length === 0) {
-      return new NextResponse("Gestor não encontrado ou sem escola", {
-        status: 404,
+    if (session.user.role === "GESTOR") {
+      const gestor = await prisma.gestor.findFirst({
+        where: {
+          userId: session.user.id,
+        },
+        include: {
+          escolas: true,
+        },
       });
+
+      if (!gestor || gestor.escolas.length === 0) {
+        return new NextResponse("Gestor não encontrado ou sem escola", {
+          status: 404,
+        });
+      }
+      escolasIds = gestor.escolas.map((escola: School) => escola.id);
     }
 
-    // Busca a turma e verifica se pertence à escola do gestor
+    // Busca a turma e verifica se pertence à escola do gestor (ou qualquer escola se admin)
     const turma = await prisma.turma.findFirst({
       where: {
         id: params.id,
-        escolaId: {
-          in: gestor.escolas.map((escola: School) => escola.id),
-        },
+        ...(session.user.role === "GESTOR" ? { escolaId: { in: escolasIds } } : {}),
       },
     });
 
@@ -53,13 +55,11 @@ export async function POST(
       return new NextResponse("Turma não encontrada", { status: 404 });
     }
 
-    // Verifica se a disciplina pertence à escola do gestor
+    // Busca a disciplina e verifica se pertence à escola do gestor (ou qualquer escola se admin)
     const disciplina = await prisma.disciplina.findFirst({
       where: {
         id: disciplinaId,
-        escolaId: {
-          in: gestor.escolas.map((escola: School) => escola.id),
-        },
+        ...(session.user.role === "GESTOR" ? { escolaId: { in: escolasIds } } : {}),
       },
     });
 

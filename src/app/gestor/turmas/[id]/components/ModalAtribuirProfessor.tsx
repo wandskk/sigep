@@ -155,10 +155,11 @@ export function ModalAtribuirProfessor({
                 </Combobox>
               </div>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="minimal-ghost"
+                  size="sm"
                   onClick={onClose}
                   disabled={isSubmitting}
                 >
@@ -166,7 +167,8 @@ export function ModalAtribuirProfessor({
                 </Button>
                 <Button
                   type="button"
-                  variant="primary"
+                  variant="minimal"
+                  size="sm"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !professorSelecionado}
                 >

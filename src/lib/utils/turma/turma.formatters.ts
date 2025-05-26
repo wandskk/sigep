@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
  */
 export type TurmaWithRelations = Prisma.TurmaGetPayload<{
   include: {
+    escola: true;
     disciplinas: {
       include: {
         disciplina: true;
@@ -54,6 +55,7 @@ export function formatarTurma(turma: TurmaWithRelations): TurmaCompleta {
     codigo: turma.codigo,
     turno: turma.turno,
     escolaId: turma.escolaId,
+    escolaNome: turma.escola.name,
     totalAlunos: turma._count.alunos,
     totalProfessores: turma._count.professores,
     disciplinas: turma.disciplinas.map((dt) => {

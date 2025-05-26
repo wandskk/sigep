@@ -11,6 +11,7 @@ export async function getTurmaById(id: string): Promise<TurmaWithRelations | nul
   return prisma.turma.findUnique({
     where: { id },
     include: {
+      escola: true,
       disciplinas: {
         include: {
           disciplina: true,

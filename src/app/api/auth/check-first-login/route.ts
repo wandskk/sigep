@@ -16,7 +16,7 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { firstLogin: true }
+      select: { firstLogin: true, email: true }
     });
 
     if (!user) {
@@ -28,7 +28,6 @@ export async function GET() {
 
     return NextResponse.json({ firstLogin: user.firstLogin });
   } catch (error) {
-    console.error("[CHECK_FIRST_LOGIN]", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }

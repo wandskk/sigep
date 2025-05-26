@@ -36,10 +36,11 @@ export default function TurmaContent({
   const [isModalAtribuirProfessorOpen, setIsModalAtribuirProfessorOpen] = useState(false);
   const [isModalConfirmarExclusaoOpen, setIsModalConfirmarExclusaoOpen] = useState(false);
   const [disciplinaSelecionada, setDisciplinaSelecionada] = useState<{ id: string; nome: string } | null>(null);
+  const [disciplinasTurma, setDisciplinasTurma] = useState<DisciplinaTurma[]>(turma.disciplinas);
 
   // Filtra as disciplinas que já estão na turma
   const disciplinasDisponiveis = disciplinas.filter(
-    (disciplina) => !turma.disciplinas.some((d) => d.id === disciplina.id)
+    (disciplina) => !disciplinasTurma.some((d) => d.id === disciplina.id)
   );
 
   const handleAdicionarDisciplinas = async (disciplinas: Array<{ disciplinaId: string; professorId?: string }>) => {
@@ -47,7 +48,7 @@ export default function TurmaContent({
       setIsSubmitting(true);
       setError(null);
       setSuccess(null);
-
+      let novasDisciplinas: DisciplinaTurma[] = [];
       for (const item of disciplinas) {
         const response = await fetch(`/api/gestor/turmas/${turma.id}/disciplinas`, {
           method: "POST",
@@ -56,16 +57,22 @@ export default function TurmaContent({
           },
           body: JSON.stringify(item),
         });
-
         if (!response.ok) {
           const errorData = await response.text();
           throw new Error(errorData || "Erro ao adicionar disciplinas");
         }
+        const data = await response.json();
+        novasDisciplinas.push({
+          id: item.disciplinaId,
+          nome: disciplinas.find((d) => d.id === item.disciplinaId)?.nome || "",
+          professor: data.professor
+            ? { id: data.professor.id, nome: data.professor.nome }
+            : null,
+        });
       }
-
+      setDisciplinasTurma((prev) => [...prev, ...novasDisciplinas]);
       setSuccess("Disciplinas adicionadas com sucesso!");
       setIsModalDisciplinasOpen(false);
-      window.location.reload(); // Recarrega a página para atualizar os dados
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao adicionar disciplinas");
     } finally {
@@ -75,12 +82,10 @@ export default function TurmaContent({
 
   const handleAtribuirProfessor = async (professorId: string) => {
     if (!disciplinaSelecionada) return;
-
     try {
       setIsSubmitting(true);
       setError(null);
       setSuccess(null);
-
       const response = await fetch(`/api/gestor/turmas/${turma.id}/disciplinas`, {
         method: "POST",
         headers: {
@@ -91,16 +96,26 @@ export default function TurmaContent({
           professorId,
         }),
       });
-
       if (!response.ok) {
         const errorData = await response.text();
         throw new Error(errorData || "Erro ao atribuir professor à disciplina");
       }
-
+      const data = await response.json();
+      setDisciplinasTurma((prev) =>
+        prev.map((d) =>
+          d.id === disciplinaSelecionada.id
+            ? {
+                ...d,
+                professor: data.professor
+                  ? { id: data.professor.id, nome: data.professor.nome }
+                  : null,
+              }
+            : d
+        )
+      );
       setSuccess(`Professor atribuído com sucesso à disciplina ${disciplinaSelecionada.nome}!`);
       setIsModalAtribuirProfessorOpen(false);
       setDisciplinaSelecionada(null);
-      window.location.reload(); // Recarrega a página para atualizar os dados
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao atribuir professor à disciplina");
     } finally {
@@ -110,28 +125,24 @@ export default function TurmaContent({
 
   const handleRemoverDisciplina = async () => {
     if (!disciplinaSelecionada) return;
-
     try {
       setIsSubmitting(true);
       setError(null);
       setSuccess(null);
-
       const response = await fetch(
         `/api/gestor/turmas/${turma.id}/disciplinas/${disciplinaSelecionada.id}`,
         {
           method: "DELETE",
         }
       );
-
       if (!response.ok) {
         const errorData = await response.text();
         throw new Error(errorData || "Erro ao remover disciplina");
       }
-
+      setDisciplinasTurma((prev) => prev.filter((d) => d.id !== disciplinaSelecionada.id));
       setSuccess("Disciplina removida com sucesso!");
       setIsModalConfirmarExclusaoOpen(false);
       setDisciplinaSelecionada(null);
-      window.location.reload(); // Recarrega a página para atualizar os dados
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao remover disciplina");
     } finally {
@@ -150,12 +161,14 @@ export default function TurmaContent({
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6]">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="space-y-6">
           <TurmaHeader
             turmaId={turma.id}
             nome={turma.nome}
+            escolaNome={turma.escolaNome || ""}
+            escolaId={turma.escolaId}
             totalAlunos={turma._count.alunos}
             totalProfessores={turma._count.professores}
             onOpenModalDisciplinas={() => setIsModalDisciplinasOpen(true)}
@@ -163,19 +176,19 @@ export default function TurmaContent({
           />
 
           {error && (
-            <Alert variant="error" className="mb-6">
+            <Alert variant="error" className="rounded-lg">
               {error}
             </Alert>
           )}
 
           {success && (
-            <Alert variant="success" className="mb-6">
+            <Alert variant="success" className="rounded-lg">
               {success}
             </Alert>
           )}
 
           <TabelaDisciplinas
-            disciplinas={turma.disciplinas}
+            disciplinas={disciplinasTurma}
             onAtribuirProfessor={openAtribuirProfessorModal}
             onRemoverDisciplina={openConfirmarExclusaoModal}
             isSubmitting={isSubmitting}

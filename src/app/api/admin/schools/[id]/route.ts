@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
+import { CreateSchoolFormData } from "@/types/school";
 
 interface School {
   id: string;
@@ -80,97 +81,29 @@ export async function PUT(
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
-    const body = await request.json();
-    const { name, address, city, state, phone, email, website, gestorId } = body;
+    const data: CreateSchoolFormData = await request.json();
 
-    // Validação básica
-    if (!name || !address || !city || !state || !phone || !email) {
-      return new NextResponse("Dados incompletos", { status: 400 });
-    }
-
-    // Verifica se a escola existe
-    const existingSchool = await (prisma as any).school.findUnique({
-      where: {
-        id,
-      },
-      select: {
-        id: true,
+    const school = await prisma.school.update({
+      where: { id },
+      data: {
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        phone: data.phone,
+        email: data.email,
+        website: data.website || null,
+        gestorId: data.gestorId || null,
       },
     });
 
-    if (!existingSchool) {
-      return new NextResponse("Escola não encontrada", { status: 404 });
-    }
-
-    // Se um gestor foi especificado, verifica se ele existe
-    if (gestorId) {
-      const gestor = await (prisma as any).gestor.findUnique({
-        where: { id: gestorId },
-      });
-      
-      if (!gestor) {
-        return new NextResponse("Gestor não encontrado", { status: 404 });
-      }
-      
-      // Verificar se o gestor já está atribuído a outra escola
-      const escolaExistente = await (prisma as any).school.findFirst({
-        where: { 
-          gestorId: gestorId,
-          NOT: { id }
-        },
-      });
-      
-      if (escolaExistente) {
-        return new NextResponse("Este gestor já está atribuído a outra escola", { status: 400 });
-      }
-    }
-
-    // Atualiza a escola
-    const updatedSchool = await (prisma as any).school.update({
-      where: {
-        id,
-      },
-      data: {
-        name,
-        address,
-        city,
-        state,
-        phone,
-        email,
-        website: website || null,
-        gestorId: gestorId || null,
-      },
-      select: {
-        id: true,
-        name: true,
-        address: true,
-        city: true,
-        state: true,
-        phone: true,
-        email: true,
-        website: true,
-        gestorId: true,
-        gestor: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-        createdAt: true,
-        updatedAt: true,
-      },
-    }) as School;
-
-    return NextResponse.json(updatedSchool);
+    return NextResponse.json(school);
   } catch (error) {
     console.error("Erro ao atualizar escola:", error);
-    return new NextResponse("Erro interno do servidor", { status: 500 });
+    return new NextResponse(
+      "Não foi possível atualizar os dados da escola",
+      { status: 500 }
+    );
   }
 }
 

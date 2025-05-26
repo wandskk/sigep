@@ -1,21 +1,13 @@
-"use client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { GestorLayoutClient } from "./GestorLayoutClient";
 
-import { UserRole } from "@prisma/client";
-import { Navigation } from "@/components/layout/Navigation";
-
-export default function GestorLayout({
+export default async function GestorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-[#F3F4F6]">
-      <Navigation 
-        role={UserRole.GESTOR}
-        basePath="/gestor"
-        title="SIGEP Gestão"
-      />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
-    </div>
-  );
+  const session = await getServerSession(authOptions);
+
+  return <GestorLayoutClient session={session}>{children}</GestorLayoutClient>;
 } 

@@ -24,3 +24,18 @@ export function generateTemporaryPassword(length = 8) {
   // Embaralha a senha
   return password.split("").sort(() => Math.random() - 0.5).join("");
 }
+
+export function formatPhoneNumber(phone: string): string {
+  // Remove todos os caracteres não numéricos
+  const numbers = phone.replace(/\D/g, '');
+  
+  // Verifica se tem 10 ou 11 dígitos
+  if (numbers.length === 10) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  } else if (numbers.length === 11) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  }
+  
+  // Se não tiver 10 ou 11 dígitos, retorna o número original
+  return phone;
+}

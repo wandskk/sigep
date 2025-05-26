@@ -5,18 +5,14 @@ import { prisma } from "@/lib/auth/prisma-adapter";
 // Função para criar a seed do banco de dados
 async function seedDatabase() {
   try {
-    console.log("Iniciando seed do banco de dados...");
-
     // Limpar dados existentes
     await cleanDatabase();
 
     // Criar usuários
     await createUsers();
 
-    console.log("Seed concluído com sucesso!");
     return { success: true, message: "Seed concluído com sucesso!" };
   } catch (error) {
-    console.error("Erro durante o seed:", error);
     return { 
       success: false, 
       message: "Erro ao executar seed", 
@@ -27,8 +23,6 @@ async function seedDatabase() {
 
 // Limpar banco de dados
 async function cleanDatabase() {
-  console.log("Limpando banco de dados...");
-
   // A ordem é importante devido às relações de chave estrangeira
   await prisma.secretaria.deleteMany();
   await prisma.gestor.deleteMany();
@@ -40,14 +34,10 @@ async function cleanDatabase() {
   await prisma.session.deleteMany();
   await prisma.account.deleteMany();
   await prisma.user.deleteMany();
-
-  console.log("Banco de dados limpo!");
 }
 
 // Criar usuários
 async function createUsers() {
-  console.log("Criando usuários...");
-
   // Senha padrão para todos os usuários: 'senha123'
   const defaultPassword = await hash("senha123", 10);
 
@@ -60,7 +50,6 @@ async function createUsers() {
       role: "ADMIN",
     },
   });
-  console.log(`Administrador criado: ${admin.email}`);
 
   // 2. Criar usuário da Secretaria
   const secretariaUser = await prisma.user.create({
@@ -80,7 +69,6 @@ async function createUsers() {
       secretaria: true,
     },
   });
-  console.log(`Usuário da Secretaria criado: ${secretariaUser.email}`);
 
   // 3. Criar gestor escolar
   const gestorUser = await prisma.user.create({
@@ -99,7 +87,6 @@ async function createUsers() {
       gestor: true,
     },
   });
-  console.log(`Gestor criado: ${gestorUser.email}`);
 
   // 4. Criar professores
   const professor1 = await prisma.user.create({
@@ -119,7 +106,6 @@ async function createUsers() {
       professor: true,
     },
   });
-  console.log(`Professor criado: ${professor1.email}`);
 
   const professor2 = await prisma.user.create({
     data: {
@@ -138,7 +124,6 @@ async function createUsers() {
       professor: true,
     },
   });
-  console.log(`Professor criado: ${professor2.email}`);
 
   // 5. Criar alunos e seus responsáveis
   const aluno1 = await prisma.user.create({
@@ -184,7 +169,6 @@ async function createUsers() {
       endereco: "Rua das Flores, 123"
     },
   });
-  console.log(`Aluno 1 e seu responsável criados: ${aluno1.email}`);
 
   const aluno2 = await prisma.user.create({
     data: {
@@ -229,7 +213,6 @@ async function createUsers() {
       endereco: "Av. Principal, 456"
     },
   });
-  console.log(`Aluno 2 e seu responsável criados: ${aluno2.email}`);
 
   const aluno3 = await prisma.user.create({
     data: {
@@ -274,7 +257,6 @@ async function createUsers() {
       endereco: "Rua do Comércio, 789"
     },
   });
-  console.log(`Aluno 3 e seu responsável criados: ${aluno3.email}`);
 }
 
 // Handler para GET

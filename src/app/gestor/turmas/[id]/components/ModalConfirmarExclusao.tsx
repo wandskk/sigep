@@ -41,10 +41,11 @@ export function ModalConfirmarExclusao({
             <span className="font-semibold">{disciplinaNome}</span> desta turma?
           </p>
 
-          <div className="flex justify-end space-x-2 mt-6">
+          <div className="flex justify-end gap-2 mt-6">
             <Button
               type="button"
-              variant="secondary"
+              variant="minimal-ghost"
+              size="sm"
               onClick={onClose}
               disabled={isSubmitting}
             >
@@ -52,9 +53,11 @@ export function ModalConfirmarExclusao({
             </Button>
             <Button
               type="button"
-              variant="danger"
+              variant="minimal-ghost"
+              size="sm"
               onClick={onConfirm}
               disabled={isSubmitting}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
               {isSubmitting ? "Removendo..." : "Confirmar Exclusão"}
             </Button>

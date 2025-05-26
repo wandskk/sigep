@@ -18,6 +18,9 @@ import {
   SelectValue 
 } from "@/components/ui/Select";
 import { Controller } from "react-hook-form";
+import { Plus, Mail, Building2, User } from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { Search } from "lucide-react";
 
 interface Professor {
   id: string;
@@ -63,6 +66,7 @@ export function ProfessoresContent({ professoresIniciais, escolas }: Professores
   const [professorToEdit, setProfessorToEdit] = useState<Professor | null>(null);
   const [novoProfessor, setNovoProfessor] = useState<Professor | null>(null);
   const [isSenhaModalOpen, setIsSenhaModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     register,
@@ -221,6 +225,15 @@ export function ProfessoresContent({ professoresIniciais, escolas }: Professores
     );
   };
 
+  const filteredProfessores = professores.filter((professor) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      professor.nome.toLowerCase().includes(searchLower) ||
+      professor.email?.toLowerCase().includes(searchLower) ||
+      professor.escola?.nome.toLowerCase().includes(searchLower)
+    );
+  });
+
   if (loading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
@@ -234,17 +247,15 @@ export function ProfessoresContent({ professoresIniciais, escolas }: Professores
   }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-[#374151]">Professores</h1>
-        <Button
-          variant="primary"
-          onClick={() => openModal("create")}
-          className="flex items-center gap-2"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Novo Professor
-        </Button>
+    <div className="space-y-6">
+      {/* Cabeçalho */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          Gerenciamento de Professores
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Gerencie todos os professores cadastrados no sistema
+        </p>
       </div>
 
       {error && (
@@ -259,82 +270,159 @@ export function ProfessoresContent({ professoresIniciais, escolas }: Professores
         </Alert>
       )}
 
-      {professores.length === 0 ? (
-        <div className="bg-white shadow-sm rounded-lg p-8 text-center">
-          <p className="text-gray-500">
-            Nenhum professor cadastrado. Clique em "Novo Professor" para começar.
-          </p>
+      {/* Barra de Pesquisa + Botão */}
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <Input
+            type="search"
+            placeholder="Buscar professores por nome, email ou escola..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
         </div>
-      ) : (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        <Button
+          variant="primary"
+          onClick={() => openModal("create")}
+          className="w-full sm:w-auto whitespace-nowrap cursor-pointer bg-blue-700 hover:bg-blue-800 text-white"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Novo Professor
+        </Button>
+      </div>
+
+      {/* Tabela */}
+      <Card>
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
+            <thead className="hidden sm:table-header-group">
+              <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
-                  Nome
+                  <div className="flex items-center space-x-2">
+                    <User className="h-4 w-4 text-gray-400" />
+                    <span>Nome</span>
+                  </div>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
-                  Email
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <span>Email</span>
+                  </div>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
-                  Escola
+                  <div className="flex items-center space-x-2">
+                    <Building2 className="h-4 w-4 text-gray-400" />
+                    <span>Escola</span>
+                  </div>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {professores.map((professor) => (
-                <tr key={professor.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {professor.nome}
+            <tbody className="divide-y divide-gray-200">
+              {filteredProfessores.map((professor) => (
+                <tr
+                  key={professor.id}
+                  className="group transition-colors duration-150 hover:bg-blue-50/50"
+                >
+                  <td className="px-4 sm:px-6 py-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {professor.nome}
+                        </div>
+                        <div className="sm:hidden mt-1 space-y-1">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Mail className="h-4 w-4 mr-1.5 text-gray-400" />
+                            {professor.email}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Building2 className="h-4 w-4 mr-1.5 text-gray-400" />
+                            {professor.escola?.nome || "Sem escola atribuída"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {professor.email}
+                  <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{professor.email}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {professor.escola?.nome || "Sem escola atribuída"}
+                  <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {professor.escola?.nome || "Sem escola atribuída"}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => openModal("edit", professor)}
-                    >
-                      <PencilIcon className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => {
-                        setProfessorToDelete(professor);
-                        setIsDeleteModalOpen(true);
-                      }}
-                    >
-                      <TrashIcon className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
+                  <td className="px-4 sm:px-6 py-4">
+                    <div className="flex items-center justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openModal("edit", professor)}
+                        className="text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                        title="Editar professor"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setProfessorToDelete(professor);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="text-gray-500 hover:text-red-600 hover:bg-red-50"
+                        title="Excluir professor"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      )}
+
+        {filteredProfessores.length === 0 && (
+          <div className="text-center py-12 bg-white">
+            <User className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">
+              {searchTerm
+                ? "Nenhum professor encontrado com os termos da busca"
+                : "Nenhum professor cadastrado"}
+            </p>
+            {!searchTerm && (
+              <Button
+                variant="primary"
+                onClick={() => openModal("create")}
+                className="mt-4 cursor-pointer"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Cadastrar primeiro professor
+              </Button>
+            )}
+          </div>
+        )}
+      </Card>
 
       {/* Modal de Criar/Editar Professor */}
       <Dialog
@@ -630,6 +718,6 @@ Instruções de acesso:
           </Dialog.Panel>
         </div>
       </Dialog>
-    </>
+    </div>
   );
 } 

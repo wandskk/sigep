@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import AuthProvider from "@/providers/session-provider";
-import { LoadingProvider } from "@/providers/loading-provider";
 import { APP_CONSTANTS } from "@/lib/constants/app";
 import "./globals.css";
+import { Inter } from "next/font/google";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { LoadingProvider } from "@/providers/loading-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
@@ -24,18 +17,22 @@ export const metadata: Metadata = {
   metadataBase: new URL(APP_CONSTANTS.serverUrl),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={inter.className}
     >
-      <body>
-        <AuthProvider>{children}</AuthProvider>
+      <body suppressHydrationWarning>
+        <LoadingProvider>
+          {children}
+        </LoadingProvider>
       </body>
     </html>
   );

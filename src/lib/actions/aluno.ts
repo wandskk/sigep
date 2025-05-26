@@ -111,7 +111,7 @@ export async function getResponsaveisByAlunoId(alunoId: string) {
   }
 }
 
-export async function addResponsavel(id: string, nome: string, cpf: string, email: string, telefone: string, parentesco: Parentesco) {
+export async function addResponsavel(id: string, nome: string, cpf: string, email: string, telefone: string, parentesco: Parentesco, endereco?: string) {
   try {
     const responsavel = await prisma.responsavel.create({
       data: {
@@ -120,6 +120,7 @@ export async function addResponsavel(id: string, nome: string, cpf: string, emai
         email,
         telefone: telefone.replace(/\D/g, ""),
         parentesco,
+        endereco: endereco || "",
         alunoId: id
       },
     });
@@ -128,5 +129,32 @@ export async function addResponsavel(id: string, nome: string, cpf: string, emai
   } catch (error) {
     console.error("Erro ao adicionar responsável:", error);
     throw error;
+  }
+}
+
+export async function getAllAlunos() {
+  try {
+    const alunos = await prisma.aluno.findMany({
+      include: {
+        turmas: {
+          include: {
+            turma: {
+              include: {
+                escola: true
+              }
+            }
+          }
+        },
+        user: true
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return alunos;
+  } catch (error) {
+    console.error('Erro ao buscar todos os alunos:', error);
+    throw new Error('Não foi possível buscar os alunos');
   }
 } 

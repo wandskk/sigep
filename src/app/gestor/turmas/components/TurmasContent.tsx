@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Dialog } from "@headlessui/react";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, EyeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -39,6 +39,9 @@ interface TurmasContentProps {
 
 export function TurmasContent({ turmasIniciais }: TurmasContentProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const isAdmin = pathname.includes("/admin");
+  const basePath = isAdmin ? "/admin" : "/gestor";
   const [turmas, setTurmas] = useState<Turma[]>(turmasIniciais);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +68,7 @@ export function TurmasContent({ turmasIniciais }: TurmasContentProps) {
       setError(null);
       setSuccess(null);
 
-      const response = await fetch("/api/gestor/turmas", {
+      const response = await fetch(`/api${basePath}/turmas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +106,7 @@ export function TurmasContent({ turmasIniciais }: TurmasContentProps) {
       setError(null);
       setSuccess(null);
 
-      const response = await fetch(`/api/gestor/turmas/${turmaToDelete.id}`, {
+      const response = await fetch(`/api${basePath}/turmas/${turmaToDelete.id}`, {
         method: "DELETE",
       });
 
@@ -228,22 +231,22 @@ export function TurmasContent({ turmasIniciais }: TurmasContentProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {turma._count.disciplinas}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={() => router.push(`/gestor/turmas/${turma.id}`)}
-                  >
-                    Ver Turma
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleDeleteClick(turma)}
-                    className="ml-2"
-                  >
-                    Excluir
-                  </Button>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 flex justify-end items-center">
+                  <EyeIcon
+                    className="h-5 w-5 text-blue-600 cursor-pointer hover:text-blue-800"
+                    onClick={() => { router.push(`${basePath}/turmas/${turma.id}`); }}
+                    title="Visualizar"
+                  />
+                  <PencilIcon
+                    className="h-5 w-5 text-yellow-500 cursor-pointer hover:text-yellow-700"
+                    onClick={() => { router.push(`${basePath}/turmas/${turma.id}/editar`); }}
+                    title="Editar"
+                  />
+                  <TrashIcon
+                    className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800"
+                    onClick={() => { handleDeleteClick(turma); }}
+                    title="Excluir"
+                  />
                 </td>
               </tr>
             ))}

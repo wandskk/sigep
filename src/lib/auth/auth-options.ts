@@ -48,19 +48,43 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 dias
+    updateAge: 24 * 60 * 60, // Atualizar a cada 24 horas
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
       }
+      
+      // Se for uma atualização da sessão, buscar dados atualizados do usuário
+      if (trigger === "update" && token.id) {
+        try {
+          const { prisma } = await import("@/lib/prisma");
+          const updatedUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { id: true, name: true, email: true, role: true, firstLogin: true }
+          });
+          
+          if (updatedUser) {
+            token.name = updatedUser.name;
+            token.email = updatedUser.email;
+            token.role = updatedUser.role;
+            token.firstLogin = updatedUser.firstLogin;
+          }
+        } catch (error) {
+          console.error("Erro ao atualizar token JWT:", error);
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id;
         session.user.role = token.role as UserRole;
+        session.user.name = token.name || session.user.name;
+        session.user.email = token.email || session.user.email;
       }
       return session;
     },

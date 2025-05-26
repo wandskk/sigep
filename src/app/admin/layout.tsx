@@ -1,21 +1,13 @@
-"use client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { AdminLayoutClient } from "./AdminLayoutClient";
 
-import { UserRole } from "@prisma/client";
-import { Navigation } from "@/components/layout/Navigation";
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-[#F3F4F6]">
-      <Navigation 
-        role={UserRole.ADMIN}
-        basePath="/admin"
-        title="SIGEP Admin"
-      />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
-    </div>
-  );
+  const session = await getServerSession(authOptions);
+
+  return <AdminLayoutClient session={session}>{children}</AdminLayoutClient>;
 } 

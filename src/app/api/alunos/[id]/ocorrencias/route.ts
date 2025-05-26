@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
@@ -18,7 +20,8 @@ export async function GET(
     // Verificar se o usuário tem permissão
     if (
       session.user.role !== UserRole.GESTOR &&
-      session.user.role !== UserRole.PROFESSOR
+      session.user.role !== UserRole.PROFESSOR &&
+      session.user.role !== UserRole.ADMIN
     ) {
       return new NextResponse("Não autorizado", { status: 403 });
     }
@@ -100,13 +103,21 @@ export async function POST(
     // Verificar se o usuário tem permissão
     if (
       session.user.role !== UserRole.GESTOR &&
-      session.user.role !== UserRole.PROFESSOR
+      session.user.role !== UserRole.PROFESSOR &&
+      session.user.role !== UserRole.ADMIN
     ) {
       return new NextResponse("Não autorizado", { status: 403 });
     }
 
     const { id } = await params;
     const data = await request.json();
+
+    // Ajuste para garantir formato ISO-8601
+    if (data.dataOcorrencia && typeof data.dataOcorrencia === "string") {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(data.dataOcorrencia)) {
+        data.dataOcorrencia = data.dataOcorrencia + "T00:00:00.000Z";
+      }
+    }
 
     // Verificar se o aluno existe e obter a escola
     const aluno = await prisma.aluno.findUnique({

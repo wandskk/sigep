@@ -46,7 +46,7 @@ export function Card({
         </div>
       )}
       
-      <div className="px-6 py-5">{children}</div>
+      <div>{children}</div>
       
       {footer && (
         <div className="px-6 py-4 border-t border-gray-200 bg-[#F3F4F6]/50">
