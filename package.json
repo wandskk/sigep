@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "taskkill /f /im node.exe 2>nul || echo \"Nenhum processo Node.js encontrado\" && next dev",
+    "dev:mcp": "npm-run-all --parallel mcp dev",
+    "mcp": "npx -y @agentdeskai/browser-tools-mcp@1.2.0 --port 3050",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -56,6 +58,7 @@
     "prisma": "^6.8.2",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "npm-run-all": "^4.1.5"
   }
 }

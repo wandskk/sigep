@@ -12,7 +12,11 @@ type SchoolWithRelations = School & {
   professores: {
     user: User;
   }[];
-  turmas: Turma[];
+  turmas: (Turma & {
+    _count: {
+      alunos: number;
+    };
+  })[];
 };
 
 async function getSchool(id: string) {
@@ -56,7 +60,15 @@ async function getSchool(id: string) {
             },
           },
         },
-        turmas: true,
+        turmas: {
+          include: {
+            _count: {
+              select: {
+                alunos: true,
+              },
+            },
+          },
+        },
       },
     })) as SchoolWithRelations | null;
 
@@ -74,6 +86,9 @@ async function getSchool(id: string) {
         name: turma.nome,
         grade: parseInt(turma.codigo.split(".")[0]) || 1,
         period: turma.turno.toLowerCase(),
+        _count: {
+          alunos: turma._count.alunos,
+        },
       })),
     };
   } catch (error) {

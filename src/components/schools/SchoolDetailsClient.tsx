@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { SchoolForm } from "./SchoolForm";
 import { Input } from "@/components/ui/Input";
+import { ClassForm } from "@/components/classes/ClassForm";
+import { useToast } from "@/components/ui/Toast";
 import {
   Pencil,
   Users,
@@ -33,6 +35,17 @@ interface Class {
   name: string;
   grade: number;
   period: string;
+  _count?: {
+    alunos: number;
+  };
+}
+
+interface Turma {
+  id: string;
+  nome: string;
+  codigo: string;
+  turno: string;
+  escolaId: string;
 }
 
 interface SchoolDetailsClientProps {
@@ -74,7 +87,13 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
   const [editSchoolError, setEditSchoolError] = useState<string | null>(null);
   const [modalHeight, setModalHeight] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEditClassModalOpen, setIsEditClassModalOpen] = useState(false);
+  const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
+  const [isDeleteClassModalOpen, setIsDeleteClassModalOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<Turma | null>(null);
+  const [isDeletingClass, setIsDeletingClass] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   // Transformar o school para o formato esperado pelo SchoolForm
   const schoolForForm: SchoolType = {
@@ -152,16 +171,39 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
   };
 
   const handleEditClass = (classId: string) => {
-    router.push(`/admin/turmas/${classId}/editar`);
+    const classToEdit = school.classes.find((c) => c.id === classId);
+    if (classToEdit) {
+      setSelectedClass({
+        id: classToEdit.id,
+        nome: classToEdit.name,
+        codigo: `${classToEdit.grade}.${classToEdit.id}`,
+        turno: classToEdit.period.toUpperCase(),
+        escolaId: school.id,
+      });
+      setIsEditClassModalOpen(true);
+    }
   };
 
   const handleDeleteClass = async (classId: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta turma? Esta ação não pode ser desfeita.")) {
-      return;
+    const classToDelete = school.classes.find((c) => c.id === classId);
+    if (classToDelete) {
+      setSelectedClass({
+        id: classToDelete.id,
+        nome: classToDelete.name,
+        codigo: `${classToDelete.grade}.${classToDelete.id}`,
+        turno: classToDelete.period.toUpperCase(),
+        escolaId: school.id,
+      });
+      setIsDeleteClassModalOpen(true);
     }
+  };
+
+  const confirmDeleteClass = async () => {
+    if (!selectedClass) return;
 
     try {
-      const response = await fetch(`/api/admin/schools/${school.id}/classes/${classId}`, {
+      setIsDeletingClass(true);
+      const response = await fetch(`/api/admin/turmas/${selectedClass.id}`, {
         method: "DELETE",
       });
 
@@ -169,10 +211,23 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
         throw new Error("Erro ao excluir turma");
       }
 
+      toast({
+        title: "Sucesso",
+        children: "Turma excluída com sucesso!",
+        variant: "default",
+      });
+
+      setIsDeleteClassModalOpen(false);
       router.refresh();
     } catch (error) {
       console.error("Erro ao excluir turma:", error);
-      alert("Erro ao excluir turma. Por favor, tente novamente.");
+      toast({
+        title: "Erro",
+        children: "Erro ao excluir turma. Por favor, tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingClass(false);
     }
   };
 
@@ -388,6 +443,7 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
               <Button
                 variant="primary"
                 className="w-full sm:w-auto whitespace-nowrap cursor-pointer bg-blue-700 hover:bg-blue-800 text-white"
+                onClick={() => setIsNewClassModalOpen(true)}
               >
                 <Plus className="h-5 w-5 mr-2" />
                 Nova Turma
@@ -417,6 +473,15 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
                           <div className="flex items-center space-x-2">
                             <Users className="h-4 w-4 text-gray-400" />
                             <span>Turno</span>
+                          </div>
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Users className="h-4 w-4 text-gray-400" />
+                            <span>Alunos</span>
                           </div>
                         </th>
                         <th
@@ -454,6 +519,9 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
                                   }`}>
                                     {turma.period}
                                   </span>
+                                  <div className="mt-1 text-sm text-gray-500">
+                                    {turma._count?.alunos || 0} alunos
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -470,6 +538,12 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
                             }`}>
                               {turma.period}
                             </span>
+                          </td>
+                          <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Users className="h-4 w-4 text-gray-400 mr-1.5" />
+                              <span className="text-gray-900">{turma._count?.alunos || 0}</span>
+                            </div>
                           </td>
                           <td className="px-4 sm:px-6 py-4">
                             <div className="flex items-center justify-end space-x-2">
@@ -519,6 +593,7 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
                     <Button
                       variant="primary"
                       className="mt-4 cursor-pointer"
+                      onClick={() => setIsNewClassModalOpen(true)}
                     >
                       <Plus className="h-5 w-5 mr-2" />
                       Criar primeira turma
@@ -555,6 +630,94 @@ export function SchoolDetailsClient({ school }: SchoolDetailsClientProps) {
           error={editSchoolError}
           onHeightChange={setModalHeight}
         />
+      </Modal>
+
+      {/* Modal de Edição de Turma */}
+      <Modal
+        isOpen={isEditClassModalOpen}
+        onClose={() => setIsEditClassModalOpen(false)}
+        title="Editar Turma"
+        maxWidth="2xl"
+      >
+        <div className="p-6">
+          <ClassForm
+            schools={[{ id: school.id, name: school.name }]}
+            initialData={selectedClass}
+            onSuccess={() => {
+              setIsEditClassModalOpen(false);
+              router.refresh();
+              toast({
+                title: "Sucesso",
+                children: "Turma atualizada com sucesso!",
+                variant: "default",
+              });
+            }}
+            onCancel={() => setIsEditClassModalOpen(false)}
+            hideBackButton
+          />
+        </div>
+      </Modal>
+
+      {/* Modal de Nova Turma */}
+      <Modal
+        isOpen={isNewClassModalOpen}
+        onClose={() => setIsNewClassModalOpen(false)}
+        title="Nova Turma"
+        maxWidth="2xl"
+      >
+        <div className="p-6">
+          <ClassForm
+            schools={[{ id: school.id, name: school.name }]}
+            initialData={null}
+            onSuccess={() => {
+              setIsNewClassModalOpen(false);
+              router.refresh();
+              toast({
+                title: "Sucesso",
+                children: "Turma criada com sucesso!",
+                variant: "default",
+              });
+            }}
+            onCancel={() => setIsNewClassModalOpen(false)}
+            hideBackButton
+          />
+        </div>
+      </Modal>
+
+      {/* Modal de Exclusão de Turma */}
+      <Modal
+        isOpen={isDeleteClassModalOpen}
+        onClose={() => !isDeletingClass && setIsDeleteClassModalOpen(false)}
+        title="Excluir Turma"
+        maxWidth="md"
+      >
+        <div className="p-6">
+          <div className="mb-6">
+            <p className="text-gray-700 mb-4">
+              Tem certeza que deseja excluir a turma <strong>{selectedClass?.nome}</strong>?
+            </p>
+            <p className="text-sm text-gray-500">
+              Esta ação não pode ser desfeita e todos os dados relacionados a esta turma serão perdidos.
+            </p>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="secondary"
+              disabled={isDeletingClass}
+              onClick={() => setIsDeleteClassModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isDeletingClass}
+              onClick={confirmDeleteClass}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeletingClass ? "Excluindo..." : "Excluir Turma"}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

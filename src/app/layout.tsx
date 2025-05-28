@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { LoadingProvider } from "@/providers/loading-provider";
+import { Providers } from "@/providers/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,9 +31,9 @@ export default async function RootLayout({
       className={inter.className}
     >
       <body suppressHydrationWarning>
-        <LoadingProvider>
+        <Providers session={session}>
           {children}
-        </LoadingProvider>
+        </Providers>
       </body>
     </html>
   );

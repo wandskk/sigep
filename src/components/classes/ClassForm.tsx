@@ -24,17 +24,20 @@ interface Turma {
 
 interface ClassFormProps {
   schools: School[];
-  initialData?: Turma;
+  initialData?: Turma | null;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+  hideBackButton?: boolean;
 }
 
-export function ClassForm({ schools, initialData }: ClassFormProps) {
+export function ClassForm({ schools, initialData, onSuccess, onCancel, hideBackButton = false }: ClassFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nome: initialData?.nome || "",
     turno: initialData?.turno || "MATUTINO",
-    escolaId: initialData?.escolaId || "",
+    escolaId: initialData?.escolaId || (schools.length === 1 ? schools[0].id : ""),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,11 +47,11 @@ export function ClassForm({ schools, initialData }: ClassFormProps) {
 
     try {
       const url = initialData
-        ? `/api/admin/schools/${formData.escolaId}/classes/${initialData.id}`
-        : `/api/admin/schools/${formData.escolaId}/classes`;
+        ? `/api/admin/turmas/${initialData.id}`
+        : `/api/admin/turmas`;
 
       const response = await fetch(url, {
-        method: initialData ? "PUT" : "POST",
+        method: initialData ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -61,8 +64,12 @@ export function ClassForm({ schools, initialData }: ClassFormProps) {
         );
       }
 
-      router.push("/admin/turmas");
-      router.refresh();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push("/admin/turmas");
+        router.refresh();
+      }
     } catch (error) {
       setError(
         error instanceof Error
@@ -78,18 +85,20 @@ export function ClassForm({ schools, initialData }: ClassFormProps) {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <Link href="/admin/turmas">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-        </Link>
-      </div>
+      {!hideBackButton && (
+        <div className="mb-6">
+          <Link href="/admin/turmas">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <Card>
         <div className="p-6">
@@ -171,15 +180,26 @@ export function ClassForm({ schools, initialData }: ClassFormProps) {
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Link href="/admin/turmas">
+              {onCancel ? (
                 <Button
                   type="button"
                   variant="secondary"
                   disabled={isSubmitting}
+                  onClick={onCancel}
                 >
                   Cancelar
                 </Button>
-              </Link>
+              ) : (
+                <Link href="/admin/turmas">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSubmitting}
+                  >
+                    Cancelar
+                  </Button>
+                </Link>
+              )}
               <Button
                 type="submit"
                 variant="primary"

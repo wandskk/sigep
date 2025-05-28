@@ -72,23 +72,25 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.GESTOR)) {
+    
+    if (!session) {
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
+    const turmaId = params.id;
+
     // Verifica se a turma existe
-    const turmaExistente = await prisma.turma.findUnique({
-      where: { id: params.id },
+    const turma = await prisma.turma.findUnique({
+      where: { id: turmaId },
     });
 
-    if (!turmaExistente) {
+    if (!turma) {
       return new NextResponse("Turma não encontrada", { status: 404 });
     }
 
     // Exclui a turma
     await prisma.turma.delete({
-      where: { id: params.id },
+      where: { id: turmaId },
     });
 
     return new NextResponse(null, { status: 204 });
