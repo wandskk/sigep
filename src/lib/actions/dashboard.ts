@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export interface DashboardStats {
   totalAlunos: number;
@@ -64,6 +65,12 @@ interface EscolaCount {
 
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   try {
+    console.log("[Dashboard] Iniciando busca de estatísticas...");
+    
+    // Verificar conexão com o banco
+    await prisma.$connect();
+    console.log("[Dashboard] Conexão com o banco estabelecida");
+
     const [
       totalEscolas,
       totalGestores,
@@ -71,22 +78,54 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       totalAlunos,
       totalTurmas
     ] = await Promise.all([
-      prisma.escola.count(),
-      prisma.user.count({ where: { role: "GESTOR" } }),
-      prisma.user.count({ where: { role: "PROFESSOR" } }),
-      prisma.aluno.count(),
-      prisma.turma.count()
+      prisma.school.count().catch((error: Error) => {
+        console.error("[Dashboard] Erro ao contar escolas:", error);
+        throw new Error("Erro ao contar escolas");
+      }),
+      prisma.user.count({ 
+        where: { role: "GESTOR" } 
+      }).catch((error: Error) => {
+        console.error("[Dashboard] Erro ao contar gestores:", error);
+        throw new Error("Erro ao contar gestores");
+      }),
+      prisma.user.count({ 
+        where: { role: "PROFESSOR" } 
+      }).catch((error: Error) => {
+        console.error("[Dashboard] Erro ao contar professores:", error);
+        throw new Error("Erro ao contar professores");
+      }),
+      prisma.aluno.count().catch((error: Error) => {
+        console.error("[Dashboard] Erro ao contar alunos:", error);
+        throw new Error("Erro ao contar alunos");
+      }),
+      prisma.turma.count().catch((error: Error) => {
+        console.error("[Dashboard] Erro ao contar turmas:", error);
+        throw new Error("Erro ao contar turmas");
+      })
     ]);
 
-    return {
+    console.log("[Dashboard] Estatísticas obtidas com sucesso:", {
       totalEscolas,
       totalGestores,
       totalProfessores,
       totalAlunos,
       totalTurmas
+    });
+
+    return {
+      totalEscolas: Number(totalEscolas),
+      totalGestores: Number(totalGestores),
+      totalProfessores: Number(totalProfessores),
+      totalAlunos: Number(totalAlunos),
+      totalTurmas: Number(totalTurmas)
     };
   } catch (error) {
     console.error("[Dashboard] Erro detalhado ao buscar estatísticas:", error);
+    if (error instanceof Error) {
+      throw new Error(`Erro ao buscar estatísticas do dashboard: ${error.message}`);
+    }
     throw new Error("Erro ao buscar estatísticas do dashboard");
+  } finally {
+    await prisma.$disconnect();
   }
 } 
