@@ -8,6 +8,7 @@ import { formatarAlunos, AlunoFormatado } from "@/lib/utils/aluno/index";
 import { Metadata } from "next";
 import { AlunosAdminContent } from "./components/AlunosAdminContent";
 import { Container } from "@/components/layout/Container";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Alunos - Admin",
@@ -15,37 +16,22 @@ export const metadata: Metadata = {
 };
 
 export default async function AlunosAdminPage() {
-  let alunos: AlunoFormatado[] = [];
-  let error: string | null = null;
-
-  // Verificação de autenticação e autorização
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== UserRole.ADMIN) {
+
+  if (!session || session.user.role !== "ADMIN") {
     redirect("/login");
   }
 
-  try {
-    // Busca todos os alunos do sistema
-    const alunosData = await getAllAlunos();
-    alunos = formatarAlunos(alunosData);
-  } catch (err) {
-    error = "Não foi possível carregar os dados dos alunos";
-    console.error("Erro ao buscar alunos:", err);
-  }
-
-  if (error) {
-    return (
-      <Container>
-        <Alert variant="error" className="mb-6">
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
-    <Container>
-      <AlunosAdminContent alunosIniciais={alunos} />
-    </Container>
+    <div className="container mx-auto py-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Alunos</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Gerencie os alunos cadastrados no sistema
+        </p>
+      </div>
+
+      <AlunosAdminContent />
+    </div>
   );
 } 

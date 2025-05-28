@@ -1,143 +1,245 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/auth-options";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { UserRole, Sexo, Situacao } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { hash } from "bcryptjs";
+import { Sexo, Situacao } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return new NextResponse("Não autorizado", { status: 401 });
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
     }
 
-    // Verifica se o usuário é um gestor
-    if (session.user.role !== UserRole.GESTOR) {
-      return new NextResponse("Não autorizado", { status: 401 });
-    }
-
-    const body = await request.json();
-    const { nome, email, dataNascimento, turmaId, senha } = body;
-
-    if (!nome || !email || !dataNascimento || !turmaId || !senha) {
-      return new NextResponse("Dados incompletos", { status: 400 });
-    }
-
-    // Verifica se o email já está em uso
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
+    const alunos = await prisma.aluno.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        turmas: {
+          include: {
+            turma: {
+              include: {
+                escola: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          name: "asc",
+        },
+      },
     });
 
-    if (existingUser) {
-      return new NextResponse("Email já está em uso", { status: 400 });
-    }
-
-    // Busca a turma para verificar a escola
-    const turma = await prisma.turma.findUnique({
-      where: { id: turmaId },
-      select: { escolaId: true }
-    });
-
-    if (!turma) {
-      return new NextResponse("Turma não encontrada", { status: 404 });
-    }
-
-    // Verifica se o gestor tem acesso à escola da turma
-    const gestor = await prisma.gestor.findFirst({
-      where: {
-        userId: session.user.id,
-        escolas: {
-          some: {
-            id: turma.escolaId
-          }
-        }
-      }
-    });
-
-    if (!gestor) {
-      return new NextResponse("Não autorizado", { status: 401 });
-    }
-
-    // Gera a matrícula do aluno
-    const matricula = await generateMatricula(turma.escolaId);
-
-    // Cria o usuário e o aluno em uma transação
-    const result = await prisma.$transaction(async (tx) => {
-      // Cria o usuário
-      const hashedPassword = await bcrypt.hash(senha, 10);
-      const user = await tx.user.create({
-        data: {
-          name: nome,
-          email,
-          password: hashedPassword,
-          role: UserRole.ALUNO,
-          firstLogin: true
-        }
-      });
-
-      // Cria o aluno
-      const aluno = await tx.aluno.create({
-        data: {
-          userId: user.id,
-          matricula,
-          dataNascimento: new Date(dataNascimento),
-          sexo: Sexo.OUTRO, // Valor padrão, pode ser atualizado depois
-          endereco: "", // Campos obrigatórios com valores padrão
-          cidade: "",
-          estado: "",
-          cep: "",
-          nomeMae: "",
-          dataMatricula: new Date(),
-          situacao: Situacao.ATIVO
-        }
-      });
-
-      // Adiciona o aluno à turma
-      await tx.alunoTurma.create({
-        data: {
-          alunoId: aluno.id,
-          turmaId
-        }
-      });
-
-      return { user, aluno };
-    });
-
-    return NextResponse.json({
-      id: result.aluno.id,
-      nome: result.user.name,
-      email: result.user.email,
-      matricula: result.aluno.matricula
-    });
+    return NextResponse.json(
+      alunos.map((aluno) => ({
+        id: aluno.id,
+        nome: aluno.user.name,
+        email: aluno.user.email,
+        matricula: aluno.matricula,
+        escola: aluno.turmas[0]?.turma.escola || null,
+      }))
+    );
   } catch (error) {
-    console.error("[ALUNOS_POST]", error);
-    return new NextResponse("Erro interno do servidor", { status: 500 });
+    console.error("Erro ao buscar alunos:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
 }
 
-async function generateMatricula(escolaId: string): Promise<string> {
-  // Busca o último aluno da escola
-  const lastAluno = await prisma.aluno.findFirst({
-    where: {
-      turmas: {
-        some: {
-          turma: {
-            escolaId
-          }
-        }
-      }
-    },
-    orderBy: { matricula: "desc" }
-  });
+export async function POST(request: Request) {
+  try {
+    console.log("Iniciando criação de aluno...");
+    const session = await getServerSession(authOptions);
 
-  // Se não houver alunos, começa com 1
-  if (!lastAluno) {
-    return "1";
+    if (!session || session.user.role !== UserRole.ADMIN) {
+      console.log("Usuário não autorizado:", session?.user);
+      return NextResponse.json(
+        { error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    console.log("Dados recebidos:", body);
+
+    const {
+      nome,
+      email,
+      matricula,
+      cpf,
+      dataNascimento,
+      telefone,
+      endereco,
+      cidade,
+      estado,
+      cep,
+      turmaId,
+    } = body;
+
+    // Validar dados obrigatórios
+    if (!nome || !email || !matricula || !cpf || !dataNascimento || !turmaId) {
+      console.log("Dados obrigatórios faltando:", {
+        nome: !!nome,
+        email: !!email,
+        matricula: !!matricula,
+        cpf: !!cpf,
+        dataNascimento: !!dataNascimento,
+        turmaId: !!turmaId,
+      });
+      return NextResponse.json(
+        { error: "Dados obrigatórios não fornecidos" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se já existe um aluno com o mesmo CPF ou matrícula
+    const alunoExistente = await prisma.aluno.findFirst({
+      where: {
+        OR: [
+          { cpf },
+          { matricula },
+        ],
+      },
+    });
+
+    if (alunoExistente) {
+      console.log("Aluno já existe:", alunoExistente);
+      return NextResponse.json(
+        { error: "Já existe um aluno com este CPF ou matrícula" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se já existe um usuário com o mesmo email
+    const usuarioExistente = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (usuarioExistente) {
+      console.log("Usuário já existe:", usuarioExistente);
+      return NextResponse.json(
+        { error: "Já existe um usuário com este email" },
+        { status: 400 }
+      );
+    }
+
+    // Buscar a turma para obter a escola
+    const turma = await prisma.turma.findUnique({
+      where: { id: turmaId },
+      include: {
+        escola: true,
+      },
+    });
+
+    if (!turma) {
+      console.log("Turma não encontrada:", turmaId);
+      return NextResponse.json(
+        { error: "Turma não encontrada" },
+        { status: 404 }
+      );
+    }
+
+    console.log("Iniciando transação para criar aluno...");
+    // Criar o aluno e o usuário em uma transação
+    const aluno = await prisma.$transaction(async (tx) => {
+      // Criar o usuário primeiro
+      const user = await tx.user.create({
+        data: {
+          email,
+          name: nome,
+          role: "ALUNO",
+          // Senha temporária que será alterada no primeiro login
+          password: await hash("123456", 10),
+        },
+      });
+
+      console.log("Usuário criado:", user);
+
+      // Criar o aluno
+      const novoAluno = await tx.aluno.create({
+        data: {
+          userId: user.id,
+          matricula,
+          cpf,
+          dataNascimento: new Date(dataNascimento),
+          telefone,
+          endereco,
+          cidade,
+          estado,
+          cep,
+          email,
+          sexo: Sexo.OUTRO,
+          nomeMae: "",
+          nomePai: "",
+          dataMatricula: new Date(),
+          situacao: Situacao.ATIVO,
+          turmas: {
+            create: {
+              turmaId,
+            },
+          },
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+          turmas: {
+            include: {
+              turma: {
+                include: {
+                  escola: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      console.log("Aluno criado:", novoAluno);
+
+      return {
+        id: novoAluno.id,
+        nome: novoAluno.user.name,
+        email: novoAluno.user.email,
+        matricula: novoAluno.matricula,
+        escola: novoAluno.turmas[0]?.turma.escola || null,
+      };
+    });
+
+    console.log("Transação concluída com sucesso");
+    return NextResponse.json(aluno);
+  } catch (error) {
+    console.error("Erro ao criar aluno:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
-
-  // Incrementa a última matrícula
-  const lastMatricula = parseInt(lastAluno.matricula);
-  return (lastMatricula + 1).toString();
 } 

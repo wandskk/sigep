@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { Modal } from "@/components/ui/Modal";
-import { ArrowLeft, Trash2, Plus, GraduationCap, School, Users, PencilIcon, Mail, UserIcon, Eye } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, GraduationCap, School, Users, PencilIcon, Mail, UserIcon, Eye, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -31,6 +31,13 @@ interface Aluno {
     id: string;
     user: User;
   };
+  presencas: Array<{
+    presente: boolean;
+    data: Date;
+    disciplina: {
+      nome: string;
+    };
+  }>;
 }
 
 interface Turma {
@@ -214,7 +221,7 @@ export function ClassDetailsClient({ turma }: ClassDetailsClientProps) {
           </div>
 
           {/* Versão Desktop - Tabela */}
-          <div className="hidden md:block">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-gray-50">
@@ -224,118 +231,154 @@ export function ClassDetailsClient({ turma }: ClassDetailsClientProps) {
                       ALUNO
                     </div>
                   </th>
-                  <th className="text-left p-4 font-semibold text-gray-500">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-400" />
-                      EMAIL
+                  <th className="text-center p-4 font-semibold text-gray-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <Calendar className="w-4 h-4 text-green-500" />
+                      PRESENÇAS
+                    </div>
+                  </th>
+                  <th className="text-center p-4 font-semibold text-gray-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <Calendar className="w-4 h-4 text-red-500" />
+                      FALTAS
                     </div>
                   </th>
                   <th className="text-right p-4 font-semibold text-gray-500">AÇÕES</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((aluno) => (
-                  <tr key={aluno.id} className="border-b hover:bg-gray-50">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gray-100">
-                          {aluno.aluno.user.image ? (
-                            <Image
-                              src={aluno.aluno.user.image}
-                              alt={aluno.aluno.user.name}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-gray-500">
-                              {aluno.aluno.user.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                {filteredStudents.map((aluno) => {
+                  const totalPresencas = aluno.presencas.filter(p => p.presente).length;
+                  const totalFaltas = aluno.presencas.filter(p => !p.presente).length;
+                  
+                  return (
+                    <tr key={aluno.id} className="border-b hover:bg-gray-50">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gray-100">
+                            {aluno.aluno.user.image ? (
+                              <Image
+                                src={aluno.aluno.user.image}
+                                alt={aluno.aluno.user.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-gray-500">
+                                {aluno.aluno.user.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <span className="font-medium text-gray-900">{aluno.aluno.user.name}</span>
                         </div>
-                        <span className="font-medium text-gray-900">{aluno.aluno.user.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-500">
-                      {aluno.aluno.user.email}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/admin/alunos/${aluno.aluno.id}`)}
-                          title="Visualizar aluno"
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => {
-                            setSelectedStudent(aluno);
-                            setIsDeleteModalOpen(true);
-                          }}
-                          title="Remover da turma"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-full bg-green-100 text-green-800 font-medium">
+                          {totalPresencas}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-full bg-red-100 text-red-800 font-medium">
+                          {totalFaltas}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push(`/admin/alunos/${aluno.aluno.id}`)}
+                            title="Visualizar aluno"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => {
+                              setSelectedStudent(aluno);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            title="Remover da turma"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
           {/* Versão Mobile - Cards */}
           <div className="md:hidden space-y-4">
-            {filteredStudents.map((aluno) => (
-              <div key={aluno.id} className="bg-white border rounded-lg p-4 shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-100">
-                    {aluno.aluno.user.image ? (
-                      <Image
-                        src={aluno.aluno.user.image}
-                        alt={aluno.aluno.user.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center text-gray-500 text-lg">
-                        {aluno.aluno.user.name.charAt(0).toUpperCase()}
+            {filteredStudents.map((aluno) => {
+              const totalPresencas = aluno.presencas.filter(p => p.presente).length;
+              const totalFaltas = aluno.presencas.filter(p => !p.presente).length;
+              
+              return (
+                <div key={aluno.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="relative h-12 w-12 rounded-full overflow-hidden bg-gray-100">
+                      {aluno.aluno.user.image ? (
+                        <Image
+                          src={aluno.aluno.user.image}
+                          alt={aluno.aluno.user.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-gray-500 text-lg">
+                          {aluno.aluno.user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{aluno.aluno.user.name}</h3>
+                      <div className="mt-1 flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500">Presenças:</span>
+                          <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                            {totalPresencas}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500">Faltas:</span>
+                          <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-red-100 text-red-800 text-xs font-medium">
+                            {totalFaltas}
+                          </span>
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">{aluno.aluno.user.name}</h3>
-                    <p className="text-sm text-gray-500">{aluno.aluno.user.email}</p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                      onClick={() => router.push(`/admin/alunos/${aluno.aluno.id}`)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Visualizar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={() => {
+                        setSelectedStudent(aluno);
+                        setIsDeleteModalOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remover
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2 pt-3 border-t">
-                  <Button
-                    variant="outline"
-                    className="flex-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-                    onClick={() => router.push(`/admin/alunos/${aluno.aluno.id}`)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Visualizar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={() => {
-                      setSelectedStudent(aluno);
-                      setIsDeleteModalOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Remover
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {filteredStudents.length === 0 && (

@@ -4,9 +4,15 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
 import { Alert } from "@/components/ui/Alert";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from "@/components/ui/Modal";
 import { Label } from "@/components/ui/Label";
 import { Plus, User, Mail, Phone, MapPin, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
@@ -38,7 +44,7 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
     email: "",
     telefone: "",
     endereco: "",
-    parentesco: Parentesco.PAI,
+    parentesco: "PAI" as Parentesco,
   });
 
   useEffect(() => {
@@ -127,14 +133,8 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
       email: "",
       telefone: "",
       endereco: "",
-      parentesco: Parentesco.PAI,
+      parentesco: "PAI" as Parentesco,
     });
-  };
-
-  const openAddModal = () => {
-    setEditingResponsavel(null);
-    resetForm();
-    setShowModal(true);
   };
 
   if (loading) {
@@ -155,13 +155,113 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
             <User className="w-6 h-6 text-purple-600" />
             <h2 className="text-xl font-semibold text-gray-800">Responsáveis</h2>
           </div>
-          <Button
-            onClick={openAddModal}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar Responsável
-          </Button>
+          <Modal open={showModal} onOpenChange={setShowModal}>
+            <ModalTrigger asChild>
+              <Button
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Responsável
+              </Button>
+            </ModalTrigger>
+            <ModalContent className="max-w-2xl">
+              <ModalHeader>
+                <ModalTitle>
+                  {editingResponsavel ? "Editar Responsável" : "Adicionar Responsável"}
+                </ModalTitle>
+              </ModalHeader>
+              <form onSubmit={handleSubmit} className="space-y-4 p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nome">Nome Completo</Label>
+                    <Input
+                      id="nome"
+                      value={formData.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cpf">CPF</Label>
+                    <Input
+                      id="cpf"
+                      value={formData.cpf}
+                      onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="telefone">Telefone</Label>
+                    <Input
+                      id="telefone"
+                      value={formData.telefone}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="endereco">Endereço</Label>
+                  <Input
+                    id="endereco"
+                    value={formData.endereco}
+                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="parentesco">Parentesco</Label>
+                  <Select
+                    value={formData.parentesco}
+                    onValueChange={(value) => setFormData({ ...formData, parentesco: value as Parentesco })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o parentesco" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PAI">Pai</SelectItem>
+                      <SelectItem value="MAE">Mãe</SelectItem>
+                      <SelectItem value="AVO">Avô/Avó</SelectItem>
+                      <SelectItem value="TIO">Tio/Tia</SelectItem>
+                      <SelectItem value="OUTRO">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowModal(false);
+                      setEditingResponsavel(null);
+                      resetForm();
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+                    {editingResponsavel ? "Atualizar" : "Adicionar"}
+                  </Button>
+                </div>
+              </form>
+            </ModalContent>
+          </Modal>
         </div>
 
         {error && (
@@ -174,10 +274,14 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
           <div className="text-center py-8">
             <User className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 mb-4">Nenhum responsável cadastrado</p>
-            <Button onClick={openAddModal} variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar primeiro responsável
-            </Button>
+            <Modal open={showModal} onOpenChange={setShowModal}>
+              <ModalTrigger asChild>
+                <Button variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar primeiro responsável
+                </Button>
+              </ModalTrigger>
+            </Modal>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -210,10 +314,10 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex gap-2">
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={() => handleEdit(responsavel)}
                       className="text-blue-600 hover:text-blue-800"
                     >
@@ -221,7 +325,7 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={() => handleDelete(responsavel.id)}
                       className="text-red-600 hover:text-red-800"
                     >
@@ -234,102 +338,6 @@ export function Responsavel({ alunoId }: ResponsavelProps) {
           </div>
         )}
       </Card>
-
-      <Modal
-        isOpen={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditingResponsavel(null);
-        }}
-        title={editingResponsavel ? "Editar Responsável" : "Adicionar Responsável"}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="nome">Nome Completo</Label>
-              <Input
-                id="nome"
-                value={formData.nome}
-                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="cpf">CPF</Label>
-              <Input
-                id="cpf"
-                value={formData.cpf}
-                onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="telefone">Telefone</Label>
-              <Input
-                id="telefone"
-                value={formData.telefone}
-                onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="endereco">Endereço</Label>
-            <Input
-              id="endereco"
-              value={formData.endereco}
-              onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="parentesco">Parentesco</Label>
-            <Select
-              value={formData.parentesco}
-              onValueChange={(value) => setFormData({ ...formData, parentesco: value as Parentesco })}
-            >
-              <option value={Parentesco.PAI}>Pai</option>
-              <option value={Parentesco.MAE}>Mãe</option>
-              <option value={Parentesco.AVO}>Avô/Avó</option>
-              <option value={Parentesco.TIO}>Tio/Tia</option>
-              <option value={Parentesco.IRMAO}>Irmão/Irmã</option>
-              <option value={Parentesco.RESPONSAVEL_LEGAL}>Responsável Legal</option>
-              <option value={Parentesco.OUTRO}>Outro</option>
-            </Select>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setShowModal(false);
-                setEditingResponsavel(null);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-              {editingResponsavel ? "Atualizar" : "Adicionar"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 } 

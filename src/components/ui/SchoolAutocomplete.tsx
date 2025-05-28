@@ -9,13 +9,18 @@ import { Input } from "./Input";
 interface School {
   id: string;
   name: string;
+  turmas: {
+    id: string;
+    nome: string;
+    codigo: string;
+  }[];
 }
 
 interface SchoolAutocompleteProps {
-  label: string;
+  label?: string;
   error?: string;
   schools: School[];
-  onSchoolSelect?: (school: School | null) => void;
+  onSelect?: (school: School | null) => void;
   value?: string;
   className?: string;
 }
@@ -24,7 +29,7 @@ export function SchoolAutocomplete({
   label,
   error,
   schools,
-  onSchoolSelect,
+  onSelect,
   value,
   className,
 }: SchoolAutocompleteProps) {
@@ -56,7 +61,7 @@ export function SchoolAutocomplete({
   const handleSelect = (school: School) => {
     setSelectedSchool(school);
     setSearchValue(school.name);
-    onSchoolSelect?.(school);
+    onSelect?.(school);
     setOpen(false);
     // Manter foco no input após seleção
     setTimeout(() => {
@@ -67,7 +72,7 @@ export function SchoolAutocomplete({
   const handleClear = () => {
     setSelectedSchool(null);
     setSearchValue("");
-    onSchoolSelect?.(null);
+    onSelect?.(null);
     setOpen(false);
     // Manter foco no input após limpar
     setTimeout(() => {
@@ -99,7 +104,9 @@ export function SchoolAutocomplete({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      {label && (
+        <label className="text-sm font-medium text-gray-700">{label}</label>
+      )}
       <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
           <div className="relative">
@@ -156,7 +163,12 @@ export function SchoolAutocomplete({
                           selectedSchool?.id === school.id ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <span className="truncate">{school.name}</span>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="truncate">{school.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {school.turmas.length} turmas
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))

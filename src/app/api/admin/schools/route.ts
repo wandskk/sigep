@@ -46,39 +46,60 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== UserRole.ADMIN) {
+    if (!session) {
       return NextResponse.json(
-        { message: "Não autorizado" },
+        { error: "Não autorizado" },
         { status: 401 }
       );
     }
 
-    const schools = await prisma.school.findMany({
+    const escolas = await prisma.school.findMany({
       include: {
         gestor: {
           include: {
             user: {
               select: {
-                id: true,
                 name: true,
                 email: true,
               },
             },
           },
         },
+        turmas: {
+          select: {
+            id: true,
+            nome: true,
+            codigo: true,
+          },
+        },
       },
-      orderBy: { name: "asc" },
+      orderBy: {
+        name: "asc",
+      },
     });
 
-    return NextResponse.json(schools);
+    return NextResponse.json(
+      escolas.map((escola) => ({
+        id: escola.id,
+        name: escola.name,
+        turmas: escola.turmas,
+        gestor: escola.gestor
+          ? {
+              id: escola.gestor.id,
+              name: escola.gestor.user.name,
+              email: escola.gestor.user.email,
+            }
+          : null,
+      }))
+    );
   } catch (error) {
     console.error("Erro ao buscar escolas:", error);
     return NextResponse.json(
-      { message: "Erro ao buscar escolas" },
+      { error: "Erro interno do servidor" },
       { status: 500 }
     );
   }

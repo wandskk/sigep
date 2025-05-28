@@ -45,6 +45,17 @@ export default async function ClassDetailsPage({ params }: ClassDetailsPageProps
               },
             },
           },
+          presencas: {
+            select: {
+              presente: true,
+              data: true,
+              disciplina: {
+                select: {
+                  nome: true,
+                },
+              },
+            },
+          },
         },
       },
     },

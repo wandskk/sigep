@@ -1,11 +1,11 @@
 "use client";
 
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { ButtonHTMLAttributes, ReactNode, forwardRef } from "react";
 
 // Variantes de botão disponíveis
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "link" | "warning" | "error" | "danger" | "success" | "destructive" | "minimal" | "minimal-outline" | "minimal-ghost";
 // Tamanhos de botão disponíveis
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 // Props para o componente Button
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,7 +20,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // Componente Button
-export function Button({
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   children,
   variant = "primary",
   size = "md",
@@ -30,7 +30,7 @@ export function Button({
   rightIcon,
   className = "",
   ...props
-}: ButtonProps) {
+}, ref) => {
   // Mapeia variantes para classes de estilo
   const variantStyles: Record<ButtonVariant, string> = {
     primary: "bg-[#1E3A8A] text-white hover:bg-[#1E3A8A]/90",
@@ -53,6 +53,7 @@ export function Button({
     sm: "px-2 py-1 text-sm",
     md: "px-3 py-1.5 text-sm",
     lg: "px-4 py-2 text-base",
+    icon: "h-8 w-8 p-0",
   };
 
   // Define classe base do botão
@@ -75,6 +76,7 @@ export function Button({
 
   return (
     <button
+      ref={ref}
       className={buttonClasses}
       disabled={isLoading || props.disabled}
       {...props}
@@ -107,4 +109,6 @@ export function Button({
       {!isLoading && rightIcon && <span className="ml-1.5">{rightIcon}</span>}
     </button>
   );
-} 
+});
+
+Button.displayName = "Button"; 

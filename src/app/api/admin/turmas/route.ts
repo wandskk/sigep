@@ -6,21 +6,18 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session) {
-      return new NextResponse("Não autorizado", { status: 401 });
+    if (!session || session.user.role !== "ADMIN") {
+      return new Response("Não autorizado", { status: 401 });
     }
 
     const data = await request.json();
-    console.log("Dados recebidos:", data);
-
     const { nome, turno, escolaId } = data;
 
     if (!nome || !turno || !escolaId) {
-      return new NextResponse("Dados inválidos", { status: 400 });
+      return new Response("Dados incompletos", { status: 400 });
     }
 
-    // Gera um código único para a turma (pode ser adaptado conforme necessário)
+    // Gera um código único para a turma
     const codigo = `TURM${Math.floor(Math.random() * 10000)}`;
 
     const turma = await prisma.turma.create({
@@ -30,20 +27,11 @@ export async function POST(request: Request) {
         codigo,
         escolaId,
       },
-      include: {
-        escola: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
     });
 
-    console.log("Turma criada com sucesso:", turma);
     return NextResponse.json(turma);
   } catch (error) {
     console.error("Erro ao criar turma:", error);
-    return new NextResponse("Erro interno do servidor", { status: 500 });
+    return new Response("Erro interno do servidor", { status: 500 });
   }
 } 

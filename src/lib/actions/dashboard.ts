@@ -69,23 +69,24 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
       totalGestores,
       totalProfessores,
       totalAlunos,
-      totalTurmas,
+      totalTurmas
     ] = await Promise.all([
-      prisma.$queryRaw<EscolaCount[]>`SELECT COUNT(*) as count FROM "schools"`,
-      prisma.gestor.count(),
-      prisma.professor.count(),
+      prisma.escola.count(),
+      prisma.user.count({ where: { role: "GESTOR" } }),
+      prisma.user.count({ where: { role: "PROFESSOR" } }),
       prisma.aluno.count(),
-      prisma.turma.count(),
+      prisma.turma.count()
     ]);
 
     return {
-      totalEscolas: Number(totalEscolas[0].count),
+      totalEscolas,
       totalGestores,
       totalProfessores,
       totalAlunos,
-      totalTurmas,
+      totalTurmas
     };
   } catch (error) {
-    throw new Error("Erro ao buscar estatísticas do dashboard do admin");
+    console.error("[Dashboard] Erro detalhado ao buscar estatísticas:", error);
+    throw new Error("Erro ao buscar estatísticas do dashboard");
   }
 } 

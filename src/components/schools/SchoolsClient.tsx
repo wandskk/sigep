@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from "@/components/ui/Modal";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { cn, formatPhoneNumber } from "@/lib/utils";
 import { useSchools } from "@/hooks/useSchools";
@@ -398,101 +398,84 @@ export function SchoolsClient({ initialSchools }: SchoolsClientProps) {
       </Card>
 
       {/* Modal de Nova Escola */}
-      <Modal
-        isOpen={isNewSchoolModalOpen}
-        onClose={() => {
-          setIsNewSchoolModalOpen(false);
-          setCreateSchoolError(null);
-        }}
-        title="Nova Escola"
-        maxWidth="3xl"
-        minHeight={modalHeight ? `${modalHeight}px` : undefined}
-      >
-        <SchoolForm
-          onSubmit={handleCreateSchool}
-          onCancel={() => {
-            setIsNewSchoolModalOpen(false);
-            setCreateSchoolError(null);
-          }}
-          isSubmitting={isCreatingSchool}
-          error={createSchoolError}
-          onHeightChange={setModalHeight}
-        />
+      <Modal open={isNewSchoolModalOpen} onOpenChange={setIsNewSchoolModalOpen}>
+        <ModalContent className="max-w-3xl">
+          <ModalHeader>
+            <ModalTitle>Nova Escola</ModalTitle>
+          </ModalHeader>
+          <SchoolForm
+            onSubmit={handleCreateSchool}
+            onCancel={() => {
+              setIsNewSchoolModalOpen(false);
+              setCreateSchoolError(null);
+            }}
+            isSubmitting={isCreatingSchool}
+            error={createSchoolError}
+            onHeightChange={setModalHeight}
+          />
+        </ModalContent>
       </Modal>
 
       {/* Modal de Edição de Escola */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          if (!isEditingSchool) {
-            setIsEditModalOpen(false);
-            setSchoolToEdit(null);
-            setEditSchoolError(null);
-          }
-        }}
-        title="Editar Escola"
-        maxWidth="3xl"
-        minHeight={modalHeight ? `${modalHeight}px` : undefined}
-      >
-        {schoolToEdit && (
-          <SchoolForm
-            school={schoolToEdit}
-            onSubmit={handleEditSchool}
-            onCancel={() => {
-              setIsEditModalOpen(false);
-              setSchoolToEdit(null);
-              setEditSchoolError(null);
-            }}
-            isSubmitting={isEditingSchool}
-            error={editSchoolError}
-            onHeightChange={setModalHeight}
-          />
-        )}
+      <Modal open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <ModalContent className="max-w-3xl">
+          <ModalHeader>
+            <ModalTitle>Editar Escola</ModalTitle>
+          </ModalHeader>
+          {schoolToEdit && (
+            <SchoolForm
+              school={schoolToEdit}
+              onSubmit={handleEditSchool}
+              onCancel={() => {
+                setIsEditModalOpen(false);
+                setSchoolToEdit(null);
+                setEditSchoolError(null);
+              }}
+              isSubmitting={isEditingSchool}
+              error={editSchoolError}
+              onHeightChange={setModalHeight}
+            />
+          )}
+        </ModalContent>
       </Modal>
 
       {/* Modal de Confirmar Exclusão */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          if (!isDeleting) {
-            setIsDeleteModalOpen(false);
-            setSchoolToDelete(null);
-          }
-        }}
-        title="Confirmar Exclusão"
-        maxWidth="md"
-      >
-        <div className="p-6">
-          <p className="mb-4 text-gray-600">
-            Tem certeza que deseja excluir a escola{" "}
-            <span className="font-semibold">{schoolToDelete?.name}</span>?
-            Esta ação não pode ser desfeita.
-          </p>
-
-          <div className="flex justify-end space-x-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                setIsDeleteModalOpen(false);
-                setSchoolToDelete(null);
-              }}
-              disabled={isDeleting}
-              className="cursor-pointer"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={handleDeleteSchool}
-              disabled={isDeleting}
-              className="cursor-pointer"
-            >
-              {isDeleting ? "Excluindo..." : "Excluir Escola"}
-            </Button>
+      <Modal open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <ModalContent className="max-w-md">
+          <ModalHeader>
+            <ModalTitle>Confirmar Exclusão</ModalTitle>
+          </ModalHeader>
+          <div className="p-6">
+            <p className="mb-4 text-gray-600">
+              Tem certeza que deseja excluir a escola {" "}
+              <span className="font-semibold">{schoolToDelete?.name}</span>?
+              Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setSchoolToDelete(null);
+                }}
+                disabled={isDeleting}
+                className="cursor-pointer"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={handleDeleteSchool}
+                disabled={isDeleting}
+                className="cursor-pointer"
+              >
+                {isDeleting ? "Excluindo..." : "Excluir Escola"}
+              </Button>
+            </div>
           </div>
-        </div>
+        </ModalContent>
       </Modal>
     </div>
   );

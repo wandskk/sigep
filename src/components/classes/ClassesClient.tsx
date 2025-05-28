@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from "@/components/ui/Modal";
 import { Label } from "@/components/ui/Label";
 import {
   Plus,
@@ -455,124 +455,118 @@ export function ClassesClient({ turmas, escolas }: ClassesClientProps) {
         )}
       </Card>
 
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedClass(null);
-        }}
-        title="Confirmar Exclusão"
-      >
-        <div className="space-y-4">
-          <p>
-            Tem certeza que deseja excluir a turma "{selectedClass?.nome}"? Esta
-            ação não pode ser desfeita.
-          </p>
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowDeleteModal(false);
-                setSelectedClass(null);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Excluir
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setSelectedClass(null);
-          setIsCreating(false);
-          resetForm();
-        }}
-        title={isCreating ? "Nova Turma" : "Editar Turma"}
-      >
-        <div className="space-y-6 px-6 py-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome" className="text-sm font-medium text-gray-700">Nome da Turma</Label>
-              <Input
-                id="nome"
-                value={editForm.nome}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, nome: e.target.value }))}
-                placeholder="Digite o nome da turma"
-                className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg transition"
-              />
-            </div>
-
-            {isCreating && (
+      <Modal open={showEditModal} onOpenChange={setShowEditModal}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>{isCreating ? "Nova Turma" : "Editar Turma"}</ModalTitle>
+          </ModalHeader>
+          <div className="space-y-6 px-6 py-6">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="escolaId" className="text-sm font-medium text-gray-700">Escola</Label>
+                <Label htmlFor="nome" className="text-sm font-medium text-gray-700">Nome da Turma</Label>
+                <Input
+                  id="nome"
+                  value={editForm.nome}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, nome: e.target.value }))}
+                  placeholder="Digite o nome da turma"
+                  className="border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg transition"
+                />
+              </div>
+
+              {isCreating && (
+                <div className="space-y-2">
+                  <Label htmlFor="escolaId" className="text-sm font-medium text-gray-700">Escola</Label>
+                  <select
+                    id="escolaId"
+                    value={editForm.escolaId}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, escolaId: e.target.value }))}
+                    className="w-full border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg px-3 py-2 text-sm transition"
+                  >
+                    <option value="">Selecione uma escola</option>
+                    {escolas.map((escola) => (
+                      <option key={escola.id} value={escola.id}>
+                        {escola.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="turno" className="text-sm font-medium text-gray-700">Turno</Label>
                 <select
-                  id="escolaId"
-                  value={editForm.escolaId}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, escolaId: e.target.value }))}
+                  id="turno"
+                  value={editForm.turno}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, turno: e.target.value }))}
                   className="w-full border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg px-3 py-2 text-sm transition"
                 >
-                  <option value="">Selecione uma escola</option>
-                  {escolas.map((escola) => (
-                    <option key={escola.id} value={escola.id}>
-                      {escola.name}
-                    </option>
-                  ))}
+                  <option value="">Selecione um turno</option>
+                  <option value="MATUTINO">Matutino</option>
+                  <option value="VESPERTINO">Vespertino</option>
+                  <option value="NOTURNO">Noturno</option>
                 </select>
               </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="turno" className="text-sm font-medium text-gray-700">Turno</Label>
-              <select
-                id="turno"
-                value={editForm.turno}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, turno: e.target.value }))}
-                className="w-full border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-lg px-3 py-2 text-sm transition"
+            </div>
+            <div className="flex justify-end gap-3 pt-6 pb-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedClass(null);
+                  setIsCreating(false);
+                  resetForm();
+                }}
+                className="rounded-lg border-gray-300 hover:bg-gray-100 px-6 py-2"
               >
-                <option value="">Selecione um turno</option>
-                <option value="MATUTINO">Matutino</option>
-                <option value="VESPERTINO">Vespertino</option>
-                <option value="NOTURNO">Noturno</option>
-              </select>
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleEdit}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 px-6 py-2"
+              >
+                {isCreating ? (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Criar Turma
+                  </>
+                ) : (
+                  <>
+                    <PencilIcon className="h-4 w-4" />
+                    Salvar Alterações
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-6 pb-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowEditModal(false);
-                setSelectedClass(null);
-                setIsCreating(false);
-                resetForm();
-              }}
-              className="rounded-lg border-gray-300 hover:bg-gray-100 px-6 py-2"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleEdit}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 px-6 py-2"
-            >
-              {isCreating ? (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Criar Turma
-                </>
-              ) : (
-                <>
-                  <PencilIcon className="h-4 w-4" />
-                  Salvar Alterações
-                </>
-              )}
-            </Button>
+        </ModalContent>
+      </Modal>
+
+      <Modal open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>Confirmar Exclusão</ModalTitle>
+          </ModalHeader>
+          <div className="space-y-4 p-6">
+            <p>
+              Tem certeza que deseja excluir a turma "{selectedClass?.nome}"? Esta
+              ação não pode ser desfeita.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedClass(null);
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Excluir
+              </Button>
+            </div>
           </div>
-        </div>
+        </ModalContent>
       </Modal>
     </div>
   );

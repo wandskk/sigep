@@ -3,14 +3,31 @@ export * from "../telefone";
 export * from "../email";
 export * from "../parentesco";
 
-export function formatarCPF(cpf: string | null): string {
-  if (!cpf) return "Não informado";
-  return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+export function formatarCPF(cpf: string): string {
+  // Remove caracteres não numéricos
+  const cpfLimpo = cpf.replace(/\D/g, "");
+  
+  // Aplica a máscara
+  return cpfLimpo
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 }
 
-export function formatarTelefone(telefone: string | null): string {
-  if (!telefone) return "Não informado";
-  return telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+export function formatarTelefone(telefone: string): string {
+  // Remove caracteres não numéricos
+  const telefoneLimpo = telefone.replace(/\D/g, "");
+  
+  // Aplica a máscara
+  if (telefoneLimpo.length <= 10) {
+    return telefoneLimpo
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  } else {
+    return telefoneLimpo
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2");
+  }
 }
 
 export function formatarEmail(email: string | null): string {

@@ -96,4 +96,41 @@ export async function DELETE(
     console.error("Erro ao excluir turma:", error);
     return new NextResponse("Erro interno do servidor", { status: 500 });
   }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !["ADMIN", "GESTOR"].includes(session.user.role)) {
+      return new Response("Não autorizado", { status: 401 });
+    }
+
+    const body = await request.json();
+    const { nome, turno } = body;
+
+    if (!nome || !turno) {
+      return new Response("Nome e turno são obrigatórios", { status: 400 });
+    }
+
+    const turma = await prisma.turma.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!turma) {
+      return new Response("Turma não encontrada", { status: 404 });
+    }
+
+    const turmaAtualizada = await prisma.turma.update({
+      where: { id: params.id },
+      data: { nome, turno },
+    });
+
+    return NextResponse.json(turmaAtualizada);
+  } catch (error) {
+    console.error("Erro ao atualizar turma:", error);
+    return new Response("Erro interno do servidor", { status: 500 });
+  }
 } 

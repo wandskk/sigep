@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalTrigger } from "@/components/ui/Modal";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/Select";
 import { Plus, AlertTriangle, ThumbsUp, MessageCircle, FileText, Eye, Calendar, User, Info, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -218,17 +218,112 @@ export function OcorrenciasClient({ alunoId, ocorrenciasIniciais }: OcorrenciasC
               </SelectContent>
             </Select>
           </div>
-          <Button
-            onClick={() => {
-              setModalAberto(true);
-              setOcorrenciaEmEdicao(null);
-              resetForm();
-            }}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Ocorrência
-          </Button>
+          <Modal open={modalAberto} onOpenChange={setModalAberto}>
+            <ModalTrigger asChild>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Ocorrência
+              </Button>
+            </ModalTrigger>
+            <ModalContent className="max-w-2xl">
+              <ModalHeader>
+                <ModalTitle>
+                  {ocorrenciaEmEdicao ? "Editar Ocorrência" : "Nova Ocorrência"}
+                </ModalTitle>
+              </ModalHeader>
+              <form onSubmit={salvarOcorrencia} className="space-y-4 p-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="tipo">Tipo de Ocorrência</Label>
+                    <Select
+                      value={formData.tipo}
+                      onValueChange={(value) => setFormData({ ...formData, tipo: value })}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADVERTENCIA">Advertência</SelectItem>
+                        <SelectItem value="ELOGIO">Elogio</SelectItem>
+                        <SelectItem value="COMUNICADO">Comunicado</SelectItem>
+                        <SelectItem value="OUTRO">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="dataOcorrencia">Data da Ocorrência</Label>
+                    <Input
+                      id="dataOcorrencia"
+                      type="date"
+                      value={formData.dataOcorrencia}
+                      onChange={(e) => setFormData({ ...formData, dataOcorrencia: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="titulo">Título</Label>
+                  <Input
+                    id="titulo"
+                    value={formData.titulo}
+                    onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+                    placeholder="Título da ocorrência"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="descricao">Descrição</Label>
+                  <textarea
+                    id="descricao"
+                    value={formData.descricao}
+                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+                    placeholder="Descreva a ocorrência..."
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    rows={4}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="visivelParaResponsavel"
+                    checked={formData.visivelParaResponsavel}
+                    onChange={(e) => setFormData({ ...formData, visivelParaResponsavel: e.target.checked })}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <Label htmlFor="visivelParaResponsavel" className="text-sm">
+                    Visível para responsável
+                  </Label>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setModalAberto(false);
+                      setOcorrenciaEmEdicao(null);
+                      resetForm();
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700"
+                    disabled={carregando}
+                  >
+                    {carregando ? "Salvando..." : (ocorrenciaEmEdicao ? "Salvar" : "Registrar")}
+                  </Button>
+                </div>
+              </form>
+            </ModalContent>
+          </Modal>
         </div>
 
         {carregando ? (
@@ -303,128 +398,33 @@ export function OcorrenciasClient({ alunoId, ocorrenciasIniciais }: OcorrenciasC
                 : "Tente alterar o filtro ou registrar uma nova ocorrência"
               }
             </p>
-            <Button onClick={() => setModalAberto(true)} variant="outline">
-              <Plus className="w-4 h-4 mr-2" />
-              Registrar ocorrência
-            </Button>
+            <Modal open={modalAberto} onOpenChange={setModalAberto}>
+              <ModalTrigger asChild>
+                <Button variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Registrar ocorrência
+                </Button>
+              </ModalTrigger>
+            </Modal>
           </div>
         )}
       </Card>
 
-      <Modal
-        isOpen={modalAberto}
-        onClose={() => {
-          setModalAberto(false);
-          setOcorrenciaEmEdicao(null);
-          resetForm();
-        }}
-        title={ocorrenciaEmEdicao ? "Editar Ocorrência" : "Nova Ocorrência"}
-      >
-        <form onSubmit={salvarOcorrencia} className="space-y-4 p-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="tipo">Tipo de Ocorrência</Label>
-              <Select
-                value={formData.tipo}
-                onValueChange={(value) => setFormData({ ...formData, tipo: value })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ADVERTENCIA">Advertência</SelectItem>
-                  <SelectItem value="ELOGIO">Elogio</SelectItem>
-                  <SelectItem value="COMUNICADO">Comunicado</SelectItem>
-                  <SelectItem value="OUTRO">Outro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="dataOcorrencia">Data da Ocorrência</Label>
-              <Input
-                id="dataOcorrencia"
-                type="date"
-                value={formData.dataOcorrencia}
-                onChange={(e) => setFormData({ ...formData, dataOcorrencia: e.target.value })}
-                required
-              />
+      <Modal open={modalConfirmarExclusao} onOpenChange={setModalConfirmarExclusao}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>Confirmar Exclusão</ModalTitle>
+          </ModalHeader>
+          <div className="p-6">
+            <p className="mb-4">Tem certeza que deseja excluir esta ocorrência?</p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setModalConfirmarExclusao(false)}>Cancelar</Button>
+              <Button className="bg-red-600 hover:bg-red-700" onClick={confirmarExclusao} disabled={carregando}>
+                Excluir
+              </Button>
             </div>
           </div>
-
-          <div>
-            <Label htmlFor="titulo">Título</Label>
-            <Input
-              id="titulo"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-              placeholder="Título da ocorrência"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="descricao">Descrição</Label>
-            <textarea
-              id="descricao"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-              placeholder="Descreva a ocorrência..."
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              rows={4}
-              required
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="visivelParaResponsavel"
-              checked={formData.visivelParaResponsavel}
-              onChange={(e) => setFormData({ ...formData, visivelParaResponsavel: e.target.checked })}
-              className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-            />
-            <Label htmlFor="visivelParaResponsavel" className="text-sm">
-              Visível para responsável
-            </Label>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setModalAberto(false);
-                setOcorrenciaEmEdicao(null);
-                resetForm();
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
-              disabled={carregando}
-            >
-              {carregando ? "Salvando..." : (ocorrenciaEmEdicao ? "Salvar" : "Registrar")}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal
-        isOpen={modalConfirmarExclusao}
-        onClose={() => setModalConfirmarExclusao(false)}
-        title="Confirmar Exclusão"
-      >
-        <div className="p-6">
-          <p className="mb-4">Tem certeza que deseja excluir esta ocorrência?</p>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setModalConfirmarExclusao(false)}>Cancelar</Button>
-            <Button className="bg-red-600 hover:bg-red-700" onClick={confirmarExclusao} disabled={carregando}>
-              Excluir
-            </Button>
-          </div>
-        </div>
+        </ModalContent>
       </Modal>
     </div>
   );
